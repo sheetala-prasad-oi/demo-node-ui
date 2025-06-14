@@ -170,20 +170,22 @@ editor.start();
 
       switch (name) {
          case 'question':
-        var facebook = `
-        <div>
-          <div class="title-box"><i class="fab fa-facebook"></i> Demo Text
-            
-            <input type="text"/></div>
-        </div>
+        var questionTemplate = `
+         <div>
+            <div class="title-box"><i class="fab fa-answer "></i> Question</div>
+            <div class="box">
+              <p>Enter Question</p>
+              <input type="text" df-name>
+            </div>
+          </div>
         `;
-          editor.addNode('facebook', 0,  1, pos_x, pos_y, 'facebook', {}, facebook );
+          editor.addNode('question', 0,  1, pos_x, pos_y, 'question', {}, questionTemplate );
           break;
         
         case 'answer':
           var answerTemplate = `
           <div>
-            <div class="title-box"><i class="fab fa-answer "></i> Github Stars</div>
+            <div class="title-box"><i class="fab fa-answer "></i> Answer</div>
             <div class="box">
               <p>Enter Answer</p>
               <input type="text" df-name>
