@@ -10,6 +10,177 @@
   <link rel="stylesheet" type="text/css" href="src/drawflow.css" />
   <link rel="stylesheet" type="text/css" href="docs/beautiful.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Quill.js WYSIWYG Editor (Free) -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  
+  <style>
+    /* WYSIWYG Editor Styles */
+    .rich-text-editor {
+      width: 100%;
+      min-height: 100px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px;
+      font-family: Arial, sans-serif;
+      resize: vertical;
+    }
+    
+    .rich-text-preview {
+      width: 100%;
+      min-height: 80px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 12px;
+      background-color: #fafafa;
+      font-family: Arial, sans-serif;
+      line-height: 1.5;
+      overflow-y: auto;
+      max-height: 200px;
+    }
+    
+    .rich-text-preview p {
+      margin: 0 0 8px 0;
+    }
+    
+    .rich-text-preview p:last-child {
+      margin-bottom: 0;
+    }
+    
+    .editor-toolbar {
+      margin-top: 10px;
+      text-align: center;
+    }
+    
+    .btn-edit {
+      background: #4ea9ff;
+      color: white;
+      border: 1px solid #0e5ba3;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .btn-edit:hover {
+      background: #0e5ba3;
+    }
+    
+    /* WYSIWYG Modal Styles */
+    .wysiwyg-modal {
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .wysiwyg-modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .wysiwyg-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .wysiwyg-header h3 {
+      margin: 0;
+      color: #333;
+    }
+    
+    .wysiwyg-close {
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #999;
+    }
+    
+    .wysiwyg-close:hover {
+      color: #333;
+    }
+    
+    .wysiwyg-body {
+      flex: 1;
+      padding: 20px;
+      overflow: hidden;
+    }
+    
+    .wysiwyg-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 20px;
+      border-top: 1px solid #eee;
+    }
+    
+    .btn-save {
+      background: #28a745;
+      color: white;
+      border: 1px solid #1e7e34;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .btn-save:hover {
+      background: #1e7e34;
+    }
+    
+    .btn-cancel {
+      background: #6c757d;
+      color: white;
+      border: 1px solid #545b62;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .btn-cancel:hover {
+      background: #545b62;
+    }
+    
+    /* Quill.js Customization */
+    .ql-editor {
+      min-height: 300px;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .ql-toolbar {
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      background: #f8f9fa;
+    }
+    
+    .ql-container {
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .wysiwyg-body .ql-editor {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body>
   <div class="wrapper">
@@ -25,6 +196,9 @@
 </div>
 <div class="drag-drawflow" draggable="true" ondragstart="drag(event)" data-node="mcq-multi">
   <i class="fas fa-check-square"></i><span>MCQ - Multiple</span>
+</div>
+<div class="drag-drawflow" draggable="true" ondragstart="drag(event)" data-node="rich-text">
+  <i class="fas fa-edit"></i><span>Rich Text Editor</span>
 </div>
 
     </div>
@@ -232,6 +406,25 @@ case 'mcq-multi':
   editor.addNode('mcq-multi', 0, 1, pos_x, pos_y, 'mcq-multi', {}, mcqMultiTemplate);
   break;
 
+case 'rich-text':
+  var richTextTemplate = `
+    <div>
+      <div class="title-box"><i class="fas fa-edit"></i> Rich Text Editor</div>
+      <div class="box">
+        <p>Rich Text Content:</p>
+        <div class="rich-text-preview" id="preview-${Date.now()}">
+          <p style="color: #666; font-style: italic;">Click "Edit Content" to add rich text...</p>
+        </div>
+        <textarea df-name class="rich-text-editor" style="display: none;"></textarea>
+        <div class="editor-toolbar">
+          <button type="button" onclick="initRichTextEditor(this)" class="btn-edit">Edit Content</button>
+        </div>
+      </div>
+    </div>
+  `;
+  editor.addNode('rich-text', 0, 1, pos_x, pos_y, 'rich-text', {}, richTextTemplate);
+  break;
+
         default:
       }
     }
@@ -289,7 +482,116 @@ case 'mcq-multi':
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-}
+    }
+
+    // WYSIWYG Editor Functions
+    function initRichTextEditor(button) {
+      const nodeElement = button.closest('.drawflow-node');
+      const textarea = nodeElement.querySelector('.rich-text-editor');
+      const nodeId = nodeElement.id.replace('node-', '');
+      
+      // Get existing content from textarea or preview
+      let existingContent = textarea.value || '';
+      if (!existingContent) {
+        const preview = nodeElement.querySelector('.rich-text-preview');
+        if (preview.innerHTML !== '<p style="color: #666; font-style: italic;">Click "Edit Content" to add rich text...</p>') {
+          existingContent = preview.innerHTML;
+        }
+      }
+      
+      // Clean up the content if it's HTML
+      if (existingContent && existingContent.includes('<')) {
+        // It's HTML content, use as is
+        existingContent = existingContent;
+      } else if (existingContent && existingContent.trim()) {
+        // It's plain text, wrap in paragraph
+        existingContent = `<p>${existingContent}</p>`;
+      }
+      
+      // Create modal for WYSIWYG editor
+      const modal = document.createElement('div');
+      modal.className = 'wysiwyg-modal';
+      modal.innerHTML = `
+        <div class="wysiwyg-modal-content">
+          <div class="wysiwyg-header">
+            <h3>Rich Text Editor</h3>
+            <span class="wysiwyg-close" onclick="closeWysiwygModal(this)">&times;</span>
+          </div>
+          <div class="wysiwyg-body">
+            <div id="wysiwyg-editor-${nodeId}">${existingContent}</div>
+          </div>
+          <div class="wysiwyg-footer">
+            <button type="button" onclick="saveWysiwygContent(${nodeId})" class="btn-save">Save</button>
+            <button type="button" onclick="closeWysiwygModal(this)" class="btn-cancel">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Initialize Quill.js
+      const quill = new Quill('#wysiwyg-editor-' + nodeId, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ header: 1 }, { header: 2 }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            ['link', 'image'],
+            ['clean']
+          ]
+        },
+        formats: ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'header', 'list', 'bullet', 'color', 'background', 'align', 'link', 'image']
+      });
+      
+      // Set initial content if it exists
+      if (existingContent && existingContent.trim()) {
+        quill.root.innerHTML = existingContent;
+      }
+    }
+
+    function saveWysiwygContent(nodeId) {
+      const quill = Quill.find('#wysiwyg-editor-' + nodeId);
+      const content = quill.root.innerHTML;
+      
+      // Update the textarea in the node
+      const nodeElement = document.getElementById(`node-${nodeId}`);
+      const textarea = nodeElement.querySelector('.rich-text-editor');
+      textarea.value = content;
+      
+      // Update the preview area
+      const preview = nodeElement.querySelector('.rich-text-preview');
+      if (content.trim()) {
+        preview.innerHTML = content;
+      } else {
+        preview.innerHTML = '<p style="color: #666; font-style: italic;">Click "Edit Content" to add rich text...</p>';
+      }
+      
+      // Update the node data
+      const nodeData = { name: content };
+      editor.updateNodeDataFromId(nodeId, nodeData);
+      
+      // Close modal and destroy editor
+      closeWysiwygModal(document.querySelector('.wysiwyg-modal'));
+    }
+
+    function closeWysiwygModal(element) {
+      const modal = element.closest('.wysiwyg-modal');
+      const editorDiv = modal.querySelector('[id^="wysiwyg-editor-"]');
+      const editorId = editorDiv.id;
+      
+      // Destroy Quill.js instance
+      const quill = Quill.find('#' + editorId);
+      if (quill) {
+        quill.destroy();
+      }
+      
+      // Remove modal
+      modal.remove();
+    }
 
 </script>
 </body>
