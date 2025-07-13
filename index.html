@@ -492,6 +492,8 @@
       dropdown.style.display = 'none';
     }
 
+    window.questionEditors = window.questionEditors || {};
+
     function initQuestionEditor(questionId) {
       const questionElement = document.getElementById(`question-${questionId}`);
       const textarea = questionElement.querySelector('.question-editor');
@@ -543,6 +545,7 @@
         },
         formats: ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'header', 'list', 'bullet', 'color', 'background', 'align', 'link', 'image']
       });
+      window.questionEditors[questionId] = quill;
       
       // Set initial content if it exists
       if (existingContent && existingContent.trim()) {
@@ -552,7 +555,7 @@
 
     function saveQuestionContent(questionId) {
       try {
-        const quill = Quill.find('#question-wysiwyg-editor-' + questionId);
+        const quill = window.questionEditors[questionId];
         if (!quill) {
           console.error('Quill editor not found');
           return;
@@ -588,8 +591,7 @@
         // Close modal and destroy editor
         closeWysiwygModal(document.querySelector('.wysiwyg-modal'));
         
-        // Show success message
-        alert('Question content saved successfully!');
+        // Removed alert here
         
       } catch (error) {
         console.error('Error saving question content:', error);
@@ -785,7 +787,7 @@
       setTimeout(() => {
         try {
           // Create connection from current node to new node
-          editor.addConnection(currentNodeId, 1, newNodeId, 0);
+          editor.addConnection(currentNodeId, 0, newNodeId, 0);
           console.log(`Connection created from node ${currentNodeId} to node ${newNodeId}`);
         } catch (error) {
           console.error('Error creating connection:', error);
@@ -800,7 +802,7 @@
               const connection = {
                 id: `conn_${currentNodeId}_${newNodeId}`,
                 output_id: currentNodeId,
-                output_class: 1,
+                output_class: 0,
                 input_id: newNodeId,
                 input_class: 0
               };
