@@ -366,13 +366,17 @@
 
     function closeWysiwygModal(element) {
       const modal = element.closest('.wysiwyg-modal');
-      const editorDiv = modal.querySelector('[id^="wysiwyg-editor-"]');
-      const editorId = editorDiv.id;
+      if (!modal) return;
       
-      // Destroy Quill.js instance
-      const quill = Quill.find('#' + editorId);
-      if (quill) {
-        quill.destroy();
+      const editorDiv = modal.querySelector('[id^="wysiwyg-editor-"]');
+      if (editorDiv) {
+        const editorId = editorDiv.id;
+        
+        // Destroy Quill.js instance
+        const quill = Quill.find('#' + editorId);
+        if (quill) {
+          quill.destroy();
+        }
       }
       
       // Remove modal
@@ -397,7 +401,15 @@
             <button type="button" onclick="removeQuestion(this)" class="btn-remove">×</button>
           </div>
           <div class="question-content">
-            <input type="text" placeholder="Enter your question here" class="question-text" df-question>
+            <div class="question-wysiwyg">
+              <div class="question-preview" id="question-preview-${questionId}">
+                <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+              </div>
+              <textarea class="question-editor" style="display: none;"></textarea>
+              <div class="question-toolbar">
+                <button type="button" onclick="initQuestionEditor(${questionId})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+              </div>
+            </div>
             <div class="options-container">
               <div class="option-item">
                 <input type="radio" name="single-${questionId}" df-option>
@@ -429,7 +441,15 @@
             <button type="button" onclick="removeQuestion(this)" class="btn-remove">×</button>
           </div>
           <div class="question-content">
-            <input type="text" placeholder="Enter your question here" class="question-text" df-question>
+            <div class="question-wysiwyg">
+              <div class="question-preview" id="question-preview-${questionId}">
+                <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+              </div>
+              <textarea class="question-editor" style="display: none;"></textarea>
+              <div class="question-toolbar">
+                <button type="button" onclick="initQuestionEditor(${questionId})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+              </div>
+            </div>
             <div class="options-container">
               <div class="option-item">
                 <input type="checkbox" df-option>
@@ -474,6 +494,111 @@
       dropdown.style.display = 'none';
     }
 
+    function initQuestionEditor(questionId) {
+      const questionElement = document.getElementById(`question-${questionId}`);
+      const textarea = questionElement.querySelector('.question-editor');
+      const preview = questionElement.querySelector('.question-preview');
+      
+      // Get existing content
+      let existingContent = textarea.value || '';
+      if (!existingContent) {
+        if (preview.innerHTML !== '<p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>') {
+          existingContent = preview.innerHTML;
+        }
+      }
+      
+      // Create modal for question WYSIWYG editor
+      const modal = document.createElement('div');
+      modal.className = 'wysiwyg-modal';
+      modal.innerHTML = `
+        <div class="wysiwyg-modal-content">
+          <div class="wysiwyg-header">
+            <h3>Question Editor</h3>
+            <span class="wysiwyg-close" onclick="closeWysiwygModal(this)">&times;</span>
+          </div>
+          <div class="wysiwyg-body">
+            <div id="question-wysiwyg-editor-${questionId}">${existingContent}</div>
+          </div>
+          <div class="wysiwyg-footer">
+            <button type="button" onclick="saveQuestionContent(${questionId})" class="btn-save">Save</button>
+            <button type="button" onclick="closeWysiwygModal(this)" class="btn-cancel">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Initialize Quill.js for question editor
+      const quill = new Quill('#question-wysiwyg-editor-' + questionId, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ header: 1 }, { header: 2 }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            ['link', 'image'],
+            ['clean']
+          ]
+        },
+        formats: ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'header', 'list', 'bullet', 'color', 'background', 'align', 'link', 'image']
+      });
+      
+      // Set initial content if it exists
+      if (existingContent && existingContent.trim()) {
+        quill.root.innerHTML = existingContent;
+      }
+    }
+
+    function saveQuestionContent(questionId) {
+      try {
+        const quill = Quill.find('#question-wysiwyg-editor-' + questionId);
+        if (!quill) {
+          console.error('Quill editor not found');
+          return;
+        }
+        
+        const content = quill.root.innerHTML;
+        console.log('Saving question content:', content);
+        
+        // Update the textarea in the question
+        const questionElement = document.getElementById(`question-${questionId}`);
+        if (!questionElement) {
+          console.error('Question element not found');
+          return;
+        }
+        
+        const textarea = questionElement.querySelector('.question-editor');
+        if (textarea) {
+          textarea.value = content;
+        }
+        
+        // Update the preview area
+        const preview = questionElement.querySelector('.question-preview');
+        if (preview) {
+          if (content.trim() && content !== '<p><br></p>') {
+            preview.innerHTML = content;
+          } else {
+            preview.innerHTML = '<p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>';
+          }
+        }
+        
+        console.log('Question content saved successfully');
+        
+        // Close modal and destroy editor
+        closeWysiwygModal(document.querySelector('.wysiwyg-modal'));
+        
+        // Show success message
+        alert('Question content saved successfully!');
+        
+      } catch (error) {
+        console.error('Error saving question content:', error);
+        alert('Error saving question content. Please try again.');
+      }
+    }
+
     // Close dropdown when clicking outside
     document.addEventListener('click', function(event) {
       const ellipsisMenus = document.querySelectorAll('.ellipsis-menu');
@@ -500,7 +625,7 @@
 
     function addSingleChoiceNode() {
       const centerX = editor.precanvas.clientWidth / 2;
-      const centerY = editor.precanvas.clientHeight / 2;
+      const startY = 100; // Position below start button
       
       const singleChoiceTemplate = `
         <div>
@@ -509,21 +634,13 @@
             <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
               <i class="fas fa-ellipsis-v"></i>
               <div class="ellipsis-dropdown">
+                <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Add Next Question</div>
                 <div class="ellipsis-option" onclick="addSingleChoice(this)">Single Choice Question</div>
                 <div class="ellipsis-option" onclick="addMultipleChoice(this)">Multiple Choice Question</div>
               </div>
             </div>
           </div>
           <div class="box">
-            <div class="rich-text-content">
-              <div class="rich-text-preview" id="preview-${Date.now()}">
-                <p style="color: #666; font-style: italic;">Click "Edit Content" to add rich text...</p>
-              </div>
-              <textarea df-name class="rich-text-editor" style="display: none;"></textarea>
-            </div>
-            <div class="editor-toolbar">
-              <button type="button" onclick="initRichTextEditor(this)" class="btn-edit"><i class="fas fa-edit"></i></button>
-            </div>
             <div class="question-container" id="question-container-${Date.now()}">
               <!-- Questions will be added here -->
             </div>
@@ -531,13 +648,13 @@
         </div>
       `;
       
-      editor.addNode('single-choice', 1, 1, centerX, centerY, 'single-choice', {}, singleChoiceTemplate);
+      editor.addNode('single-choice', 1, 1, centerX, startY, 'single-choice', {}, singleChoiceTemplate);
       hideStartOptions();
     }
 
     function addMultipleChoiceNode() {
       const centerX = editor.precanvas.clientWidth / 2;
-      const centerY = editor.precanvas.clientHeight / 2;
+      const startY = 100; // Position below start button
       
       const multipleChoiceTemplate = `
         <div>
@@ -546,21 +663,13 @@
             <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
               <i class="fas fa-ellipsis-v"></i>
               <div class="ellipsis-dropdown">
+                <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Add Next Question</div>
                 <div class="ellipsis-option" onclick="addSingleChoice(this)">Single Choice Question</div>
                 <div class="ellipsis-option" onclick="addMultipleChoice(this)">Multiple Choice Question</div>
               </div>
             </div>
           </div>
           <div class="box">
-            <div class="rich-text-content">
-              <div class="rich-text-preview" id="preview-${Date.now()}">
-                <p style="color: #666; font-style: italic;">Click "Edit Content" to add rich text...</p>
-              </div>
-              <textarea df-name class="rich-text-editor" style="display: none;"></textarea>
-            </div>
-            <div class="editor-toolbar">
-              <button type="button" onclick="initRichTextEditor(this)" class="btn-edit"><i class="fas fa-edit"></i></button>
-            </div>
             <div class="question-container" id="question-container-${Date.now()}">
               <!-- Questions will be added here -->
             </div>
@@ -568,8 +677,42 @@
         </div>
       `;
       
-      editor.addNode('multiple-choice', 1, 1, centerX, centerY, 'multiple-choice', {}, multipleChoiceTemplate);
+      editor.addNode('multiple-choice', 1, 1, centerX, startY, 'multiple-choice', {}, multipleChoiceTemplate);
       hideStartOptions();
+    }
+
+    function addNextNode(optionElement, type) {
+      const currentNode = optionElement.closest('.drawflow-node');
+      const currentNodeRect = currentNode.getBoundingClientRect();
+      const canvasRect = editor.precanvas.getBoundingClientRect();
+      
+      // Calculate position below current node
+      const nextX = (currentNodeRect.left + currentNodeRect.width / 2 - canvasRect.left) / editor.zoom;
+      const nextY = (currentNodeRect.bottom - canvasRect.top + 50) / editor.zoom; // 50px gap
+      
+      const nextNodeTemplate = `
+        <div>
+          <div class="title-box">
+            <i class="fas fa-${type === 'single' ? 'list-ul' : 'check-square'}"></i> ${type === 'single' ? 'Single' : 'Multiple'} Choice Question
+            <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+              <i class="fas fa-ellipsis-v"></i>
+              <div class="ellipsis-dropdown">
+                <div class="ellipsis-option" onclick="addNextNode(this, '${type}')">Add Next Question</div>
+                <div class="ellipsis-option" onclick="addSingleChoice(this)">Single Choice Question</div>
+                <div class="ellipsis-option" onclick="addMultipleChoice(this)">Multiple Choice Question</div>
+              </div>
+            </div>
+          </div>
+          <div class="box">
+            <div class="question-container" id="question-container-${Date.now()}">
+              <!-- Questions will be added here -->
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode(`${type}-choice-next`, 1, 1, nextX, nextY, `${type}-choice-next`, {}, nextNodeTemplate);
+      closeEllipsisMenu(optionElement);
     }
 
     function hideStartOptions() {
@@ -577,6 +720,6 @@
       startOptions.style.display = 'none';
     }
 
-</script>
-</body>
-</html>
+  </script>
+  </body>
+  </html>
