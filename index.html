@@ -631,7 +631,7 @@
             <i class="fas fa-ellipsis-v"></i>
             <div class="ellipsis-dropdown">
               <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Add Next Question</div>
-              <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
             </div>
           </div>
           <div class="box">
@@ -682,7 +682,7 @@
             <i class="fas fa-ellipsis-v"></i>
             <div class="ellipsis-dropdown">
               <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Add Next Question</div>
-              <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
             </div>
           </div>
           <div class="box">
@@ -819,9 +819,27 @@
     }
 
     function removeNode(optionElement) {
+      console.log('removeNode called with:', optionElement);
+      
+      // Find the node element
       const nodeElement = optionElement.closest('.drawflow-node');
+      console.log('Found node element:', nodeElement);
+      
+      if (!nodeElement) {
+        console.error('Could not find node element');
+        return;
+      }
+      
       const nodeId = nodeElement.id.replace('node-', '');
-      editor.removeNodeId(nodeId);
+      console.log('Node ID to remove:', nodeId);
+      
+      try {
+        editor.removeNodeId('node-' + nodeId); // <-- fix here
+        console.log('Node removed successfully');
+      } catch (error) {
+        console.error('Error removing node:', error);
+      }
+      
       closeEllipsisMenu(optionElement);
     }
 
