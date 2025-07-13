@@ -18,12 +18,6 @@
 </head>
 <body>
   <div class="wrapper">
-    <div class="col">
-      <div class="drag-drawflow" draggable="true" ondragstart="drag(event)" data-node="rich-text">
-        <i class="fas fa-edit"></i><span>Rich Text Editor</span>
-      </div>
-    </div>
-
     <div class="col-right">
 
       <div class="menu">
@@ -34,6 +28,23 @@
       </div>
 
       <div id="drawflow" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <!-- Start Button -->
+        <div class="start-button-container">
+          <button class="start-button" onclick="showStartOptions()">
+            <i class="fas fa-plus"></i>
+            <span>Start</span>
+          </button>
+          <div class="start-options" id="start-options">
+            <div class="start-option" onclick="addSingleChoiceNode()">
+              <i class="fas fa-list-ul"></i>
+              <span>Single Choice Question</span>
+            </div>
+            <div class="start-option" onclick="addMultipleChoiceNode()">
+              <i class="fas fa-check-square"></i>
+              <span>Multiple Choice Question</span>
+            </div>
+          </div>
+        </div>
 
         <!-- <div class="btn-export" onclick="Swal.fire({ title: 'Export',
         html: '<pre><code>'+JSON.stringify(editor.export(), null,4)+'</code></pre>'
@@ -41,6 +52,7 @@
 
         <div class="btn-export" onclick="exportJSON()">Export</div>
         <div class="btn-clear" onclick="editor.clearModuleSelected()">Clear</div>
+        <div class="btn-load" onclick="loadFlow()">Load</div>
         <div class="btn-lock">
           <i id="lock" class="fas fa-lock" onclick="editor.editor_mode='fixed'; changeMode('lock');"></i>
           <i id="unlock" class="fas fa-lock-open" onclick="editor.editor_mode='edit'; changeMode('unlock');" style="display:none;"></i>
@@ -471,7 +483,99 @@
           dropdown.style.display = 'none';
         }
       });
+      
+      // Close start options when clicking outside
+      const startOptions = document.getElementById('start-options');
+      const startButton = document.querySelector('.start-button');
+      if (startOptions && startButton && !startButton.contains(event.target) && !startOptions.contains(event.target)) {
+        startOptions.style.display = 'none';
+      }
     });
+
+    // Start Button Functions
+    function showStartOptions() {
+      const startOptions = document.getElementById('start-options');
+      startOptions.style.display = startOptions.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function addSingleChoiceNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const centerY = editor.precanvas.clientHeight / 2;
+      
+      const singleChoiceTemplate = `
+        <div>
+          <div class="title-box">
+            <i class="fas fa-list-ul"></i> Single Choice Question
+            <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+              <i class="fas fa-ellipsis-v"></i>
+              <div class="ellipsis-dropdown">
+                <div class="ellipsis-option" onclick="addSingleChoice(this)">Single Choice Question</div>
+                <div class="ellipsis-option" onclick="addMultipleChoice(this)">Multiple Choice Question</div>
+              </div>
+            </div>
+          </div>
+          <div class="box">
+            <div class="rich-text-content">
+              <div class="rich-text-preview" id="preview-${Date.now()}">
+                <p style="color: #666; font-style: italic;">Click "Edit Content" to add rich text...</p>
+              </div>
+              <textarea df-name class="rich-text-editor" style="display: none;"></textarea>
+            </div>
+            <div class="editor-toolbar">
+              <button type="button" onclick="initRichTextEditor(this)" class="btn-edit"><i class="fas fa-edit"></i></button>
+            </div>
+            <div class="question-container" id="question-container-${Date.now()}">
+              <!-- Questions will be added here -->
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('single-choice', 1, 1, centerX, centerY, 'single-choice', {}, singleChoiceTemplate);
+      hideStartOptions();
+    }
+
+    function addMultipleChoiceNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const centerY = editor.precanvas.clientHeight / 2;
+      
+      const multipleChoiceTemplate = `
+        <div>
+          <div class="title-box">
+            <i class="fas fa-check-square"></i> Multiple Choice Question
+            <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+              <i class="fas fa-ellipsis-v"></i>
+              <div class="ellipsis-dropdown">
+                <div class="ellipsis-option" onclick="addSingleChoice(this)">Single Choice Question</div>
+                <div class="ellipsis-option" onclick="addMultipleChoice(this)">Multiple Choice Question</div>
+              </div>
+            </div>
+          </div>
+          <div class="box">
+            <div class="rich-text-content">
+              <div class="rich-text-preview" id="preview-${Date.now()}">
+                <p style="color: #666; font-style: italic;">Click "Edit Content" to add rich text...</p>
+              </div>
+              <textarea df-name class="rich-text-editor" style="display: none;"></textarea>
+            </div>
+            <div class="editor-toolbar">
+              <button type="button" onclick="initRichTextEditor(this)" class="btn-edit"><i class="fas fa-edit"></i></button>
+            </div>
+            <div class="question-container" id="question-container-${Date.now()}">
+              <!-- Questions will be added here -->
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('multiple-choice', 1, 1, centerX, centerY, 'multiple-choice', {}, multipleChoiceTemplate);
+      hideStartOptions();
+    }
+
+    function hideStartOptions() {
+      const startOptions = document.getElementById('start-options');
+      startOptions.style.display = 'none';
+    }
 
 </script>
 </body>
