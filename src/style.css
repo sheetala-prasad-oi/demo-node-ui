@@ -38,14 +38,187 @@
   background: #4ea9ff;
   color: white;
   border: 1px solid #0e5ba3;
-  padding: 8px 16px;
+  padding: 8px 12px;
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-edit:hover {
   background: #0e5ba3;
+}
+
+.btn-edit i {
+  font-size: 16px;
+}
+
+/* Ellipsis Menu Styles */
+.title-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.ellipsis-menu {
+  position: relative;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.ellipsis-menu:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.ellipsis-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 200px;
+  display: none;
+}
+
+.ellipsis-option {
+  padding: 10px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+  text-align: left;
+}
+
+.ellipsis-option:last-child {
+  border-bottom: none;
+}
+
+.ellipsis-option:hover {
+  background-color: #f5f5f5;
+}
+
+/* Question Container Styles */
+.question-container {
+  margin-top: 15px;
+  text-align: left;
+}
+
+.question-item {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  background: #f9f9f9;
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: #e9ecef;
+  border-bottom: 1px solid #ddd;
+  border-radius: 4px 4px 0 0;
+}
+
+.question-type {
+  font-weight: bold;
+  color: #333;
+}
+
+.btn-remove {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.btn-remove:hover {
+  background: #c82333;
+}
+
+.question-content {
+  padding: 15px;
+  text-align: left;
+}
+
+.question-text {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.options-container {
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  text-align: left;
+  min-width: 150px;
+  flex: 0 0 auto;
+}
+
+.option-item input[type="radio"],
+.option-item input[type="checkbox"] {
+  margin-right: 8px;
+  margin-left: 0;
+}
+
+.option-text {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.btn-add-option {
+  background: #28a745;
+  color: white;
+  border: 1px solid #1e7e34;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  margin-left: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.btn-add-option:hover {
+  background: #1e7e34;
+}
+
+/* Rich Text Content Layout */
+.rich-text-content {
+  text-align: left;
 }
 
 /* WYSIWYG Modal Styles */
@@ -162,3 +335,10 @@
   border: 1px solid #ccc;
   border-radius: 4px;
 } 
+.drawflow-node .title-box{
+  line-height: 20px !important;
+}
+.drawflow .drawflow-node{
+  width: auto !important;
+}
+

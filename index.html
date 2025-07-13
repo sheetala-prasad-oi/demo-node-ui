@@ -9,197 +9,19 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js" integrity="sha256-KzZiKy0DWYsnwMF+X1DvQngQ2/FxF7MF3Ff72XcpuPs=" crossorigin="anonymous"></script>
   <link rel="stylesheet" type="text/css" href="src/drawflow.css" />
   <link rel="stylesheet" type="text/css" href="docs/beautiful.css" />
+  <link rel="stylesheet" type="text/css" href="src/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Quill.js WYSIWYG Editor (Free) -->
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
   
-  <style>
-    /* WYSIWYG Editor Styles */
-    .rich-text-editor {
-      width: 100%;
-      min-height: 100px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      padding: 8px;
-      font-family: Arial, sans-serif;
-      resize: vertical;
-    }
-    
-    .rich-text-preview {
-      width: 100%;
-      min-height: 80px;
-      border: 1px solid #e0e0e0;
-      border-radius: 4px;
-      background-color: #fafafa;
-      font-family: Arial, sans-serif;
-      line-height: 1.5;
-      overflow-y: auto;
-      max-height: 200px;
-    }
-    
-    .rich-text-preview p {
-      margin: 0 0 8px 0;
-    }
-    
-    .rich-text-preview p:last-child {
-      margin-bottom: 0;
-    }
-    
-    .editor-toolbar {
-      margin-top: 10px;
-      text-align: center;
-    }
-    
-    .btn-edit {
-      background: #4ea9ff;
-      color: white;
-      border: 1px solid #0e5ba3;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    
-    .btn-edit:hover {
-      background: #0e5ba3;
-    }
-    
-    /* WYSIWYG Modal Styles */
-    .wysiwyg-modal {
-      position: fixed;
-      z-index: 10000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .wysiwyg-modal-content {
-      background-color: white;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 800px;
-      max-height: 90vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    }
-    
-    .wysiwyg-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .wysiwyg-header h3 {
-      margin: 0;
-      color: #333;
-    }
-    
-    .wysiwyg-close {
-      font-size: 24px;
-      font-weight: bold;
-      cursor: pointer;
-      color: #999;
-    }
-    
-    .wysiwyg-close:hover {
-      color: #333;
-    }
-    
-    .wysiwyg-body {
-      flex: 1;
-      padding: 20px;
-      overflow: hidden;
-    }
-    
-    .wysiwyg-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      padding: 20px;
-      border-top: 1px solid #eee;
-    }
-    
-    .btn-save {
-      background: #28a745;
-      color: white;
-      border: 1px solid #1e7e34;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    
-    .btn-save:hover {
-      background: #1e7e34;
-    }
-    
-    .btn-cancel {
-      background: #6c757d;
-      color: white;
-      border: 1px solid #545b62;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    
-    .btn-cancel:hover {
-      background: #545b62;
-    }
-    
-    /* Quill.js Customization */
-    .ql-editor {
-      min-height: 300px;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-    
-    .ql-toolbar {
-      border-top-left-radius: 4px;
-      border-top-right-radius: 4px;
-      background: #f8f9fa;
-    }
-    
-    .ql-container {
-      border-bottom-left-radius: 4px;
-      border-bottom-right-radius: 4px;
-    }
-    
-    .wysiwyg-body .ql-editor {
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-  </style>
 </head>
 <body>
   <div class="wrapper">
     <div class="col">
-      <div class="drag-drawflow" draggable="true" ondragstart="drag(event)" data-node="question">
-        <i class="fab fa-question"></i><span>Question</span>
+      <div class="drag-drawflow" draggable="true" ondragstart="drag(event)" data-node="rich-text">
+        <i class="fas fa-edit"></i><span>Rich Text Editor</span>
       </div>
-      <div class="drag-drawflow" draggable="true" ondragstart="drag(event)" data-node="answer">
-        <i class="fab fa-answer"></i><span>Answer</span>
-      </div>
-      <div class="drag-drawflow" draggable="true" ondragstart="drag(event)" data-node="mcq-single">
-  <i class="fas fa-list-ul"></i><span>MCQ - Single</span>
-</div>
-<div class="drag-drawflow" draggable="true" ondragstart="drag(event)" data-node="mcq-multi">
-  <i class="fas fa-check-square"></i><span>MCQ - Multiple</span>
-</div>
-<div class="drag-drawflow" draggable="true" ondragstart="drag(event)" data-node="rich-text">
-  <i class="fas fa-edit"></i><span>Rich Text Editor</span>
-</div>
-
     </div>
 
     <div class="col-right">
@@ -345,85 +167,38 @@
       pos_x = pos_x * ( editor.precanvas.clientWidth / (editor.precanvas.clientWidth * editor.zoom)) - (editor.precanvas.getBoundingClientRect().x * ( editor.precanvas.clientWidth / (editor.precanvas.clientWidth * editor.zoom)));
       pos_y = pos_y * ( editor.precanvas.clientHeight / (editor.precanvas.clientHeight * editor.zoom)) - (editor.precanvas.getBoundingClientRect().y * ( editor.precanvas.clientHeight / (editor.precanvas.clientHeight * editor.zoom)));
 
-
       switch (name) {
-         case 'question':
-        var questionTemplate = `
-         <div>
-            <div class="title-box"><i class="fab fa-answer "></i> Question</div>
-            <div class="box">
-              <p>Enter Question</p>
-              <input type="text" df-name>
+        case 'rich-text':
+          var richTextTemplate = `
+            <div>
+              <div class="title-box">
+                <i class="fas fa-edit"></i> Rich Text Editor
+                <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                  <i class="fas fa-ellipsis-v"></i>
+                  <div class="ellipsis-dropdown">
+                    <div class="ellipsis-option" onclick="addSingleChoice(this)">Single Choice Question</div>
+                    <div class="ellipsis-option" onclick="addMultipleChoice(this)">Multiple Choice Question</div>
+                  </div>
+                </div>
+              </div>
+              <div class="box">
+                <div class="rich-text-content">
+                  <div class="rich-text-preview" id="preview-${Date.now()}">
+                    <p style="color: #666; font-style: italic;">Click "Edit Content" to add rich text...</p>
+                  </div>
+                  <textarea df-name class="rich-text-editor" style="display: none;"></textarea>
+                </div>
+                <div class="editor-toolbar">
+                  <button type="button" onclick="initRichTextEditor(this)" class="btn-edit"><i class="fas fa-edit"></i></button>
+                </div>
+                <div class="question-container" id="question-container-${Date.now()}">
+                  <!-- Questions will be added here -->
+                </div>
+              </div>
             </div>
-          </div>
-        `;
-          editor.addNode('question', 0,  1, pos_x, pos_y, 'question', {}, questionTemplate );
-          break;
-        
-        case 'answer':
-          var answerTemplate = `
-          <div>
-            <div class="title-box"><i class="fab fa-answer "></i> Answer</div>
-            <div class="box">
-              <p>Enter Answer</p>
-              <input type="text" df-name>
-            </div>
-          </div>
           `;
-          editor.addNode('answer', 1, 0, pos_x, pos_y, 'answer', { "name": ''}, answerTemplate );
-
+          editor.addNode('rich-text', 1, 1, pos_x, pos_y, 'rich-text', {}, richTextTemplate);
           break;
-          case 'mcq-single':
-  var mcqSingleTemplate = `
-    <div>
-      <div class="title-box"><i class="fas fa-list-ul"></i> Single Choice</div>
-      <div class="box">
-        <p>Question:</p>
-        <input type="text" df-question>
-        <p>Options:</p>
-        <input type="radio" name="mcq-${Date.now()}" df-option> <input type="text" df-option-label><br>
-        <input type="radio" name="mcq-${Date.now()}" df-option> <input type="text" df-option-label><br>
-      </div>
-    </div>
-  `;
-  editor.addNode('mcq-single', 0, 1, pos_x, pos_y, 'mcq-single', {}, mcqSingleTemplate);
-  break;
-
-case 'mcq-multi':
-  var mcqMultiTemplate = `
-    <div>
-      <div class="title-box"><i class="fas fa-check-square"></i> Multiple Choice</div>
-      <div class="box">
-        <p>Question:</p>
-        <input type="text" df-question>
-        <p>Options:</p>
-        <input type="checkbox" df-option> <input type="text" df-option-label><br>
-        <input type="checkbox" df-option> <input type="text" df-option-label><br>
-      </div>
-    </div>
-  `;
-  editor.addNode('mcq-multi', 0, 1, pos_x, pos_y, 'mcq-multi', {}, mcqMultiTemplate);
-  break;
-
-case 'rich-text':
-  var richTextTemplate = `
-    <div>
-      <div class="title-box"><i class="fas fa-edit"></i> Rich Text Editor</div>
-      <div class="box">
-        <p>Rich Text Content:</p>
-        <div class="rich-text-preview" id="preview-${Date.now()}">
-          <p style="color: #666; font-style: italic;">Click "Edit Content" to add rich text...</p>
-        </div>
-        <textarea df-name class="rich-text-editor" style="display: none;"></textarea>
-        <div class="editor-toolbar">
-          <button type="button" onclick="initRichTextEditor(this)" class="btn-edit">Edit Content</button>
-        </div>
-      </div>
-    </div>
-  `;
-  editor.addNode('rich-text', 1,1, pos_x, pos_y, 'rich-text', {}, richTextTemplate);
-  break;
-
         default:
       }
     }
@@ -591,6 +366,112 @@ case 'rich-text':
       // Remove modal
       modal.remove();
     }
+
+    // Ellipsis Menu Functions
+    function toggleEllipsisMenu(ellipsisElement) {
+      const dropdown = ellipsisElement.querySelector('.ellipsis-dropdown');
+      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function addSingleChoice(optionElement) {
+      const nodeElement = optionElement.closest('.drawflow-node');
+      const questionContainer = nodeElement.querySelector('.question-container');
+      const questionId = Date.now();
+      
+      const singleChoiceHTML = `
+        <div class="question-item" id="question-${questionId}">
+          <div class="question-header">
+            <span class="question-type">Single Choice Question</span>
+            <button type="button" onclick="removeQuestion(this)" class="btn-remove">×</button>
+          </div>
+          <div class="question-content">
+            <input type="text" placeholder="Enter your question here" class="question-text" df-question>
+            <div class="options-container">
+              <div class="option-item">
+                <input type="radio" name="single-${questionId}" df-option>
+                <input type="text" placeholder="Option 1" df-option-label class="option-text">
+              </div>
+              <div class="option-item">
+                <input type="radio" name="single-${questionId}" df-option>
+                <input type="text" placeholder="Option 2" df-option-label class="option-text">
+              </div>
+            </div>
+            <button type="button" onclick="addOption(this, 'single')" class="btn-add-option">+</button>
+          </div>
+        </div>
+      `;
+      
+      questionContainer.insertAdjacentHTML('beforeend', singleChoiceHTML);
+      closeEllipsisMenu(optionElement);
+    }
+
+    function addMultipleChoice(optionElement) {
+      const nodeElement = optionElement.closest('.drawflow-node');
+      const questionContainer = nodeElement.querySelector('.question-container');
+      const questionId = Date.now();
+      
+      const multipleChoiceHTML = `
+        <div class="question-item" id="question-${questionId}">
+          <div class="question-header">
+            <span class="question-type">Multiple Choice Question</span>
+            <button type="button" onclick="removeQuestion(this)" class="btn-remove">×</button>
+          </div>
+          <div class="question-content">
+            <input type="text" placeholder="Enter your question here" class="question-text" df-question>
+            <div class="options-container">
+              <div class="option-item">
+                <input type="checkbox" df-option>
+                <input type="text" placeholder="Option 1" df-option-label class="option-text">
+              </div>
+              <div class="option-item">
+                <input type="checkbox" df-option>
+                <input type="text" placeholder="Option 2" df-option-label class="option-text">
+              </div>
+            </div>
+            <button type="button" onclick="addOption(this, 'multiple')" class="btn-add-option">+</button>
+          </div>
+        </div>
+      `;
+      
+      questionContainer.insertAdjacentHTML('beforeend', multipleChoiceHTML);
+      closeEllipsisMenu(optionElement);
+    }
+
+    function addOption(button, type) {
+      const questionItem = button.closest('.question-item');
+      const optionsContainer = questionItem.querySelector('.options-container');
+      const questionId = questionItem.id.replace('question-', '');
+      
+      const optionHTML = `
+        <div class="option-item">
+          <input type="${type === 'single' ? 'radio' : 'checkbox'}" name="${type === 'single' ? 'single-' + questionId : 'multiple-' + questionId}" df-option>
+          <input type="text" placeholder="New option" df-option-label class="option-text">
+        </div>
+      `;
+      
+      optionsContainer.insertAdjacentHTML('beforeend', optionHTML);
+    }
+
+    function removeQuestion(button) {
+      const questionItem = button.closest('.question-item');
+      questionItem.remove();
+    }
+
+    function closeEllipsisMenu(optionElement) {
+      const dropdown = optionElement.closest('.ellipsis-dropdown');
+      dropdown.style.display = 'none';
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const ellipsisMenus = document.querySelectorAll('.ellipsis-menu');
+      ellipsisMenus.forEach(menu => {
+        const dropdown = menu.querySelector('.ellipsis-dropdown');
+        if (!menu.contains(event.target)) {
+          dropdown.style.display = 'none';
+        }
+      });
+    });
 
 </script>
 </body>
