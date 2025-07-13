@@ -398,7 +398,6 @@
         <div class="question-item" id="question-${questionId}">
           <div class="question-header">
             <span class="question-type">Single Choice Question</span>
-            <button type="button" onclick="removeQuestion(this)" class="btn-remove">×</button>
           </div>
           <div class="question-content">
             <div class="question-wysiwyg">
@@ -438,7 +437,6 @@
         <div class="question-item" id="question-${questionId}">
           <div class="question-header">
             <span class="question-type">Multiple Choice Question</span>
-            <button type="button" onclick="removeQuestion(this)" class="btn-remove">×</button>
           </div>
           <div class="question-content">
             <div class="question-wysiwyg">
@@ -629,20 +627,42 @@
       
       const singleChoiceTemplate = `
         <div>
-          <div class="title-box">
-            <i class="fas fa-list-ul"></i> Single Choice Question
-            <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
-              <i class="fas fa-ellipsis-v"></i>
-              <div class="ellipsis-dropdown">
-                <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Add Next Question</div>
-                <div class="ellipsis-option" onclick="addSingleChoice(this)">Single Choice Question</div>
-                <div class="ellipsis-option" onclick="addMultipleChoice(this)">Multiple Choice Question</div>
-              </div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Add Next Question</div>
+              <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
             </div>
           </div>
           <div class="box">
             <div class="question-container" id="question-container-${Date.now()}">
-              <!-- Questions will be added here -->
+              <div class="question-item" id="question-${Date.now()}">
+                <div class="question-header">
+                  <span class="question-type">Single Choice Question</span>
+                </div>
+                <div class="question-content">
+                  <div class="question-wysiwyg">
+                    <div class="question-preview" id="question-preview-${Date.now()}">
+                      <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+                    </div>
+                    <textarea class="question-editor" style="display: none;"></textarea>
+                    <div class="question-toolbar">
+                      <button type="button" onclick="initQuestionEditor(${Date.now()})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+                    </div>
+                  </div>
+                  <div class="options-container">
+                    <div class="option-item">
+                      <input type="radio" name="single-${Date.now()}" df-option>
+                      <input type="text" placeholder="Option 1" df-option-label class="option-text">
+                    </div>
+                    <div class="option-item">
+                      <input type="radio" name="single-${Date.now()}" df-option>
+                      <input type="text" placeholder="Option 2" df-option-label class="option-text">
+                    </div>
+                  </div>
+                  <button type="button" onclick="addOption(this, 'single')" class="btn-add-option">+</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -658,20 +678,42 @@
       
       const multipleChoiceTemplate = `
         <div>
-          <div class="title-box">
-            <i class="fas fa-check-square"></i> Multiple Choice Question
-            <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
-              <i class="fas fa-ellipsis-v"></i>
-              <div class="ellipsis-dropdown">
-                <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Add Next Question</div>
-                <div class="ellipsis-option" onclick="addSingleChoice(this)">Single Choice Question</div>
-                <div class="ellipsis-option" onclick="addMultipleChoice(this)">Multiple Choice Question</div>
-              </div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Add Next Question</div>
+              <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
             </div>
           </div>
           <div class="box">
             <div class="question-container" id="question-container-${Date.now()}">
-              <!-- Questions will be added here -->
+              <div class="question-item" id="question-${Date.now()}">
+                <div class="question-header">
+                  <span class="question-type">Multiple Choice Question</span>
+                </div>
+                <div class="question-content">
+                  <div class="question-wysiwyg">
+                    <div class="question-preview" id="question-preview-${Date.now()}">
+                      <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+                    </div>
+                    <textarea class="question-editor" style="display: none;"></textarea>
+                    <div class="question-toolbar">
+                      <button type="button" onclick="initQuestionEditor(${Date.now()})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+                    </div>
+                  </div>
+                  <div class="options-container">
+                    <div class="option-item">
+                      <input type="checkbox" df-option>
+                      <input type="text" placeholder="Option 1" df-option-label class="option-text">
+                    </div>
+                    <div class="option-item">
+                      <input type="checkbox" df-option>
+                      <input type="text" placeholder="Option 2" df-option-label class="option-text">
+                    </div>
+                  </div>
+                  <button type="button" onclick="addOption(this, 'multiple')" class="btn-add-option">+</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -692,26 +734,94 @@
       
       const nextNodeTemplate = `
         <div>
-          <div class="title-box">
-            <i class="fas fa-${type === 'single' ? 'list-ul' : 'check-square'}"></i> ${type === 'single' ? 'Single' : 'Multiple'} Choice Question
-            <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
-              <i class="fas fa-ellipsis-v"></i>
-              <div class="ellipsis-dropdown">
-                <div class="ellipsis-option" onclick="addNextNode(this, '${type}')">Add Next Question</div>
-                <div class="ellipsis-option" onclick="addSingleChoice(this)">Single Choice Question</div>
-                <div class="ellipsis-option" onclick="addMultipleChoice(this)">Multiple Choice Question</div>
-              </div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, '${type}')">Add Next Question</div>
+              <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
             </div>
           </div>
           <div class="box">
             <div class="question-container" id="question-container-${Date.now()}">
-              <!-- Questions will be added here -->
+              <div class="question-item" id="question-${Date.now()}">
+                <div class="question-header">
+                  <span class="question-type">${type === 'single' ? 'Single' : 'Multiple'} Choice Question</span>
+                </div>
+                <div class="question-content">
+                  <div class="question-wysiwyg">
+                    <div class="question-preview" id="question-preview-${Date.now()}">
+                      <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+                    </div>
+                    <textarea class="question-editor" style="display: none;"></textarea>
+                    <div class="question-toolbar">
+                      <button type="button" onclick="initQuestionEditor(${Date.now()})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+                    </div>
+                  </div>
+                  <div class="options-container">
+                    <div class="option-item">
+                      <input type="${type === 'single' ? 'radio' : 'checkbox'}" name="${type}-${Date.now()}" df-option>
+                      <input type="text" placeholder="Option 1" df-option-label class="option-text">
+                    </div>
+                    <div class="option-item">
+                      <input type="${type === 'single' ? 'radio' : 'checkbox'}" name="${type}-${Date.now()}" df-option>
+                      <input type="text" placeholder="Option 2" df-option-label class="option-text">
+                    </div>
+                  </div>
+                  <button type="button" onclick="addOption(this, '${type}')" class="btn-add-option">+</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       `;
       
-      editor.addNode(`${type}-choice-next`, 1, 1, nextX, nextY, `${type}-choice-next`, {}, nextNodeTemplate);
+      // Get current node ID before adding new node
+      const currentNodeId = currentNode.id.replace('node-', '');
+      
+      // Add the new node
+      const newNodeId = editor.addNode(`${type}-choice-next`, 1, 1, nextX, nextY, `${type}-choice-next`, {}, nextNodeTemplate);
+      
+      // Wait a bit for the node to be fully created, then create connection
+      setTimeout(() => {
+        try {
+          // Create connection from current node to new node
+          editor.addConnection(currentNodeId, 1, newNodeId, 0);
+          console.log(`Connection created from node ${currentNodeId} to node ${newNodeId}`);
+        } catch (error) {
+          console.error('Error creating connection:', error);
+          // Try alternative connection method
+          try {
+            editor.addConnection(currentNodeId, 0, newNodeId, 0);
+            console.log(`Alternative connection created from node ${currentNodeId} to node ${newNodeId}`);
+          } catch (altError) {
+            console.error('Alternative connection also failed:', altError);
+            // Try manual connection creation
+            try {
+              const connection = {
+                id: `conn_${currentNodeId}_${newNodeId}`,
+                output_id: currentNodeId,
+                output_class: 1,
+                input_id: newNodeId,
+                input_class: 0
+              };
+              editor.drawflow.drawflow[editor.module].data[connection.id] = connection;
+              editor.updateConnectionNodes(`node-${currentNodeId}`);
+              editor.updateConnectionNodes(`node-${newNodeId}`);
+              console.log(`Manual connection created from node ${currentNodeId} to node ${newNodeId}`);
+            } catch (manualError) {
+              console.error('Manual connection also failed:', manualError);
+            }
+          }
+        }
+      }, 100);
+      
+      closeEllipsisMenu(optionElement);
+    }
+
+    function removeNode(optionElement) {
+      const nodeElement = optionElement.closest('.drawflow-node');
+      const nodeId = nodeElement.id.replace('node-', '');
+      editor.removeNodeId(nodeId);
       closeEllipsisMenu(optionElement);
     }
 
