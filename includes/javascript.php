@@ -1,8 +1,48 @@
 <script>
 <?php
-// Include node templates for JavaScript use
-include 'node-templates.php';
+// Node templates are already included in index.php
 ?>
+
+// Define functions immediately to avoid reference errors
+window.showStartOptions = function() {
+  const startOptions = document.getElementById('start-options');
+  if (startOptions) {
+    startOptions.style.display = startOptions.style.display === 'block' ? 'none' : 'block';
+  }
+};
+
+window.hideStartOptions = function() {
+  const startOptions = document.getElementById('start-options');
+  if (startOptions) {
+    startOptions.style.display = 'none';
+  }
+};
+
+// Ensure all required functions are available globally
+window.addEventListener('DOMContentLoaded', function() {
+  // Make sure showStartOptions is available
+  if (typeof window.showStartOptions === 'undefined') {
+    window.showStartOptions = function() {
+      const startOptions = document.getElementById('start-options');
+      if (startOptions) {
+        startOptions.style.display = startOptions.style.display === 'block' ? 'none' : 'block';
+      }
+    };
+  }
+  
+  // Make sure hideStartOptions is available
+  if (typeof window.hideStartOptions === 'undefined') {
+    window.hideStartOptions = function() {
+      const startOptions = document.getElementById('start-options');
+      if (startOptions) {
+        startOptions.style.display = 'none';
+      }
+    };
+  }
+  
+  // Test that the function is available
+  console.log('showStartOptions available:', typeof window.showStartOptions);
+});
 
 var id = document.getElementById("drawflow");
 const editor = new Drawflow(id);
@@ -655,9 +695,11 @@ document.addEventListener('click', function(event) {
 });
 
 // Start Button Functions
-function showStartOptions() {
+window.showStartOptions = function() {
   const startOptions = document.getElementById('start-options');
-  startOptions.style.display = startOptions.style.display === 'block' ? 'none' : 'block';
+  if (startOptions) {
+    startOptions.style.display = startOptions.style.display === 'block' ? 'none' : 'block';
+  }
 }
 
 <?php
@@ -668,7 +710,7 @@ foreach ($nodeTypes as $type => $config) {
     $inputs = $config['inputs'];
     $outputs = $config['outputs'];
     
-    echo "function {$functionName}() {\n";
+    echo "window.{$functionName} = function() {\n";
     echo "  const centerX = editor.precanvas.clientWidth / 2;\n";
     echo "  const startY = 100;\n";
     echo "  \n";
@@ -800,8 +842,16 @@ foreach ($nodeTypes as $type => $config) {
     
     echo "  `;\n";
     echo "  \n";
-    echo "  editor.addNode('{$nodeType}', {$inputs}, {$outputs}, centerX, startY, '{$nodeType}', {}, template);\n";
-    echo "  hideStartOptions();\n";
+    echo "  try {\n";
+    echo "    editor.addNode('{$nodeType}', {$inputs}, {$outputs}, centerX, startY, '{$nodeType}', {}, template);\n";
+    echo "    if (typeof hideStartOptions === 'function') {\n";
+    echo "      hideStartOptions();\n";
+    echo "    } else if (typeof window.hideStartOptions === 'function') {\n";
+    echo "      window.hideStartOptions();\n";
+    echo "    }\n";
+    echo "  } catch (error) {\n";
+    echo "    console.error('Error adding {$nodeType} node:', error);\n";
+    echo "  }\n";
     echo "}\n\n";
 }
 ?>
@@ -973,9 +1023,11 @@ function removeNode(optionElement) {
   closeEllipsisMenu(optionElement);
 }
 
-function hideStartOptions() {
+window.hideStartOptions = function() {
   const startOptions = document.getElementById('start-options');
-  startOptions.style.display = 'none';
+  if (startOptions) {
+    startOptions.style.display = 'none';
+  }
 }
 
 // Load and Save functions

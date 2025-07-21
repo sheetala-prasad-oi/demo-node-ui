@@ -16,16 +16,7 @@ $nodeTypes = [
     'user-condition' => ['name' => 'User Condition', 'icon' => 'fas fa-user-check', 'inputs' => 1, 'outputs' => 2]
 ];
 
-// Function to generate ellipsis menu options
-function generateEllipsisMenu() {
-    global $nodeTypes;
-    $menu = '';
-    foreach ($nodeTypes as $type => $config) {
-        $menu .= '<div class="ellipsis-option" onclick="addNextNode(this, \'' . $type . '\')">' . $config['name'] . '</div>';
-    }
-    $menu .= '<div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>';
-    return $menu;
-}
+
 
 // Function to generate start button options
 function generateStartOptions() {
