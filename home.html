@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Drawflow</title>
+  <script src="dist/drawflow.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js" integrity="sha256-KzZiKy0DWYsnwMF+X1DvQngQ2/FxF7MF3Ff72XcpuPs=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" type="text/css" href="src/drawflow.css" />
+  <link rel="stylesheet" type="text/css" href="docs/beautiful.css" />
+  <link rel="stylesheet" type="text/css" href="src/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Quill.js WYSIWYG Editor (Free) -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  
+</head>
+<body>
+  <div class="wrapper">
+    <div class="col-right">
+
+      <div class="menu">
+        <ul>
+          <li onclick="editor.changeModule('Home'); changeModule(event);" class="selected">Home</li>
+          <li onclick="editor.changeModule('Other'); changeModule(event);">Other Module</li>
+        </ul>
+      </div>
+
+      <div id="drawflow" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <!-- Start Button -->
+        <div class="start-button-container">
+          <button class="start-button" onclick="showStartOptions()">
+            <i class="fas fa-plus"></i>
+            <span>Start</span>
+          </button>
+          <div class="start-options" id="start-options">
+            <div class="start-option" onclick="addStartActionNode()">
+              <i class="fas fa-play"></i>
+              <span>Start Action</span>
+            </div>
+            <div class="start-option" onclick="addEndActionNode()">
+              <i class="fas fa-stop"></i>
+              <span>End Action</span>
+            </div>
+            <div class="start-option" onclick="addGoToActionNode()">
+              <i class="fas fa-arrow-right"></i>
+              <span>Go to Action</span>
+            </div>
+            <div class="start-option" onclick="addMessageNode()">
+              <i class="fas fa-comment"></i>
+              <span>Message</span>
+            </div>
+            <div class="start-option" onclick="addSingleChoiceNode()">
+              <i class="fas fa-list-ul"></i>
+              <span>Single Choice Question</span>
+            </div>
+            <div class="start-option" onclick="addMultipleChoiceNode()">
+              <i class="fas fa-check-square"></i>
+              <span>Multiple Choice Question</span>
+            </div>
+            <div class="start-option" onclick="addSliderQuestionNode()">
+              <i class="fas fa-sliders-h"></i>
+              <span>Slider Question</span>
+            </div>
+            <div class="start-option" onclick="addShowRecommendationsNode()">
+              <i class="fas fa-lightbulb"></i>
+              <span>Show Recommendations</span>
+            </div>
+            <div class="start-option" onclick="addSharePageNode()">
+              <i class="fas fa-file-alt"></i>
+              <span>Share Page</span>
+            </div>
+            <div class="start-option" onclick="addShareVideoNode()">
+              <i class="fas fa-video"></i>
+              <span>Share Video</span>
+            </div>
+            <div class="start-option" onclick="addSaveInsightNode()">
+              <i class="fas fa-save"></i>
+              <span>Save Insight</span>
+            </div>
+            <div class="start-option" onclick="addInsightConditionNode()">
+              <i class="fas fa-question-circle"></i>
+              <span>Insight Condition</span>
+            </div>
+            <div class="start-option" onclick="addUserConditionNode()">
+              <i class="fas fa-user-check"></i>
+              <span>User Condition</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- <div class="btn-export" onclick="Swal.fire({ title: 'Export',
+        html: '<pre><code>'+JSON.stringify(editor.export(), null,4)+'</code></pre>'
+        })">Export</div> -->
+
+        <div class="btn-export" onclick="exportJSON()">Export</div>
+        <div class="btn-clear" onclick="editor.clearModuleSelected()">Clear</div>
+        <div class="btn-load" onclick="loadFlow()">Load</div>
+        <div class="btn-lock">
+          <i id="lock" class="fas fa-lock" onclick="editor.editor_mode='fixed'; changeMode('lock');"></i>
+          <i id="unlock" class="fas fa-lock-open" onclick="editor.editor_mode='edit'; changeMode('unlock');" style="display:none;"></i>
+        </div>
+        <div class="bar-zoom">
+          <i class="fas fa-search-minus" onclick="editor.zoom_out()"></i>
+          <i class="fas fa-search" onclick="editor.zoom_reset()"></i>
+          <i class="fas fa-search-plus" onclick="editor.zoom_in()"></i>
+        </div>
+      </div>
+
+    </div>
+  </div>
+<script>
+      var id = document.getElementById("drawflow");
+    const editor = new Drawflow(id);
+    editor.reroute = true;
+    editor.reroute_fix_curvature = true;
+    editor.force_first_input = false;
+  
+    editor.start();
+    // Events!
+    editor.on('nodeCreated', function(id) {
+      console.log("Node created " + id);
+    })
+
+    editor.on('nodeRemoved', function(id) {
+      console.log("Node removed " + id);
+    })
+
+    editor.on('nodeSelected', function(id) {
+      console.log("Node selected " + id);
+    })
+
+    editor.on('moduleCreated', function(name) {
+      console.log("Module Created " + name);
+    })
+
+    editor.on('moduleChanged', function(name) {
+      console.log("Module Changed " + name);
+    })
+
+    editor.on('connectionCreated', function(connection) {
+      console.log('Connection created');
+      console.log(connection);
+    })
+
+    editor.on('connectionRemoved', function(connection) {
+      console.log('Connection removed');
+      console.log(connection);
+    })
+/*
+    editor.on('mouseMove', function(position) {
+      console.log('Position mouse x:' + position.x + ' y:'+ position.y);
+    })
+*/
+    editor.on('nodeMoved', function(id) {
+      console.log("Node moved " + id);
+    })
+
+    editor.on('zoom', function(zoom) {
+      console.log('Zoom level ' + zoom);
+    })
+
+    editor.on('translate', function(position) {
+      console.log('Translate x:' + position.x + ' y:'+ position.y);
+    })
+
+    editor.on('addReroute', function(id) {
+      console.log("Reroute added " + id);
+    })
+
+    editor.on('removeReroute', function(id) {
+      console.log("Reroute removed " + id);
+    })
+    /* DRAG EVENT */
+
+    /* Mouse and Touch Actions */
+
+    var elements = document.getElementsByClassName('drag-drawflow');
+    for (var i = 0; i < elements.length; i++) {
+      elements[i].addEventListener('touchend', drop, false);
+      elements[i].addEventListener('touchmove', positionMobile, false);
+      elements[i].addEventListener('touchstart', drag, false );
+    }
+
+    var mobile_item_selec = '';
+    var mobile_last_move = null;
+   function positionMobile(ev) {
+     mobile_last_move = ev;
+   }
+
+   function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      if (ev.type === "touchstart") {
+        mobile_item_selec = ev.target.closest(".drag-drawflow").getAttribute('data-node');
+      } else {
+      ev.dataTransfer.setData("node", ev.target.getAttribute('data-node'));
+      }
+    }
+
+    function drop(ev) {
+      if (ev.type === "touchend") {
+        var parentdrawflow = document.elementFromPoint( mobile_last_move.touches[0].clientX, mobile_last_move.touches[0].clientY).closest("#drawflow");
+        if(parentdrawflow != null) {
+          addNodeToDrawFlow(mobile_item_selec, mobile_last_move.touches[0].clientX, mobile_last_move.touches[0].clientY);
+        }
+        mobile_item_selec = '';
+      } else {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("node");
+        addNodeToDrawFlow(data, ev.clientX, ev.clientY);
+      }
+
+    }
+
+    function addNodeToDrawFlow(name, pos_x, pos_y) {
+      if(editor.editor_mode === 'fixed') {
+        return false;
+      }
+      pos_x = pos_x * ( editor.precanvas.clientWidth / (editor.precanvas.clientWidth * editor.zoom)) - (editor.precanvas.getBoundingClientRect().x * ( editor.precanvas.clientWidth / (editor.precanvas.clientWidth * editor.zoom)));
+      pos_y = pos_y * ( editor.precanvas.clientHeight / (editor.precanvas.clientHeight * editor.zoom)) - (editor.precanvas.getBoundingClientRect().y * ( editor.precanvas.clientHeight / (editor.precanvas.clientHeight * editor.zoom)));
+
+      switch (name) {
+        case 'rich-text':
+          var richTextTemplate = `
+            <div>
+              <div class="title-box">
+                <i class="fas fa-edit"></i> Rich Text Editor
+                <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                  <i class="fas fa-ellipsis-v"></i>
+                  <div class="ellipsis-dropdown">
+                    <div class="ellipsis-option" onclick="addSingleChoice(this)">Single Choice Question</div>
+                    <div class="ellipsis-option" onclick="addMultipleChoice(this)">Multiple Choice Question</div>
+                  </div>
+                </div>
+              </div>
+              <div class="box">
+                <div class="rich-text-content">
+                  <div class="rich-text-preview" id="preview-${Date.now()}">
+                    <p style="color: #666; font-style: italic;">Click "Edit Content" to add rich text...</p>
+                  </div>
+                  <textarea df-name class="rich-text-editor" style="display: none;"></textarea>
+                </div>
+                <div class="editor-toolbar">
+                  <button type="button" onclick="initRichTextEditor(this)" class="btn-edit"><i class="fas fa-edit"></i></button>
+                </div>
+                <div class="question-container" id="question-container-${Date.now()}">
+                  <!-- Questions will be added here -->
+                </div>
+              </div>
+            </div>
+          `;
+          editor.addNode('rich-text', 1, 1, pos_x, pos_y, 'rich-text', {}, richTextTemplate);
+          break;
+        default:
+      }
+    }
+
+  var transform = '';
+  function showpopup(e) {
+    e.target.closest(".drawflow-node").style.zIndex = "9999";
+    e.target.children[0].style.display = "block";
+    transform = editor.precanvas.style.transform;
+    editor.precanvas.style.transform = '';
+    editor.precanvas.style.left = editor.canvas_x +'px';
+    editor.precanvas.style.top = editor.canvas_y +'px';
+    console.log(transform);
+    editor.editor_mode = "fixed";
+  }
+
+   function closemodal(e) {
+     e.target.closest(".drawflow-node").style.zIndex = "2";
+     e.target.parentElement.parentElement.style.display  ="none";
+     editor.precanvas.style.transform = transform;
+       editor.precanvas.style.left = '0px';
+       editor.precanvas.style.top = '0px';
+      editor.editor_mode = "edit";
+   }
+
+    function changeModule(event) {
+      var all = document.querySelectorAll(".menu ul li");
+        for (var i = 0; i < all.length; i++) {
+          all[i].classList.remove('selected');
+        }
+      event.target.classList.add('selected');
+    }
+
+    function changeMode(option) {
+      if(option == 'lock') {
+        lock.style.display = 'none';
+        unlock.style.display = 'block';
+      } else {
+        lock.style.display = 'block';
+        unlock.style.display = 'none';
+      }
+    }
+
+    function exportJSON() {
+        const jsonData = editor.export();
+
+        const dataStr = JSON.stringify(jsonData, null, 4);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'export.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // WYSIWYG Editor Functions
+    function initRichTextEditor(button) {
+      const nodeElement = button.closest('.drawflow-node');
+      const textarea = nodeElement.querySelector('.rich-text-editor');
+      const nodeId = nodeElement.id.replace('node-', '');
+      
+      // Get existing content from textarea or preview
+      let existingContent = textarea.value || '';
+      if (!existingContent) {
+        const preview = nodeElement.querySelector('.rich-text-preview');
+        if (preview.innerHTML !== '<p style="color: #666; font-style: italic;">Click "Edit Content" to add rich text...</p>') {
+          existingContent = preview.innerHTML;
+        }
+      }
+      
+      // Clean up the content if it's HTML
+      if (existingContent && existingContent.includes('<')) {
+        // It's HTML content, use as is
+        existingContent = existingContent;
+      } else if (existingContent && existingContent.trim()) {
+        // It's plain text, wrap in paragraph
+        existingContent = `<p>${existingContent}</p>`;
+      }
+      
+      // Create modal for WYSIWYG editor
+      const modal = document.createElement('div');
+      modal.className = 'wysiwyg-modal';
+      modal.innerHTML = `
+        <div class="wysiwyg-modal-content">
+          <div class="wysiwyg-header">
+            <h3>Rich Text Editor</h3>
+            <span class="wysiwyg-close" onclick="closeWysiwygModal(this)">&times;</span>
+          </div>
+          <div class="wysiwyg-body">
+            <div id="wysiwyg-editor-${nodeId}">${existingContent}</div>
+          </div>
+          <div class="wysiwyg-footer">
+            <button type="button" onclick="saveWysiwygContent(${nodeId})" class="btn-save">Save</button>
+            <button type="button" onclick="closeWysiwygModal(this)" class="btn-cancel">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Initialize Quill.js
+      const quill = new Quill('#wysiwyg-editor-' + nodeId, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ header: 1 }, { header: 2 }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            ['link', 'image'],
+            ['clean']
+          ]
+        },
+        formats: ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'header', 'list', 'bullet', 'color', 'background', 'align', 'link', 'image']
+      });
+      
+      // Set initial content if it exists
+      if (existingContent && existingContent.trim()) {
+        quill.root.innerHTML = existingContent;
+      }
+    }
+
+    function saveWysiwygContent(nodeId) {
+      const quill = Quill.find('#wysiwyg-editor-' + nodeId);
+      const content = quill.root.innerHTML;
+      
+      // Update the textarea in the node
+      const nodeElement = document.getElementById(`node-${nodeId}`);
+      const textarea = nodeElement.querySelector('.rich-text-editor');
+      textarea.value = content;
+      
+      // Update the preview area
+      const preview = nodeElement.querySelector('.rich-text-preview');
+      if (content.trim()) {
+        preview.innerHTML = content;
+      } else {
+        preview.innerHTML = '<p style="color: #666; font-style: italic;">Click "Edit Content" to add rich text...</p>';
+      }
+      
+      // Update the node data
+      const nodeData = { name: content };
+      editor.updateNodeDataFromId(nodeId, nodeData);
+      
+      // Close modal and destroy editor
+      closeWysiwygModal(document.querySelector('.wysiwyg-modal'));
+    }
+
+    function closeWysiwygModal(element) {
+      const modal = element.closest('.wysiwyg-modal');
+      if (!modal) return;
+      
+      const editorDiv = modal.querySelector('[id^="wysiwyg-editor-"]');
+      if (editorDiv) {
+        const editorId = editorDiv.id;
+        
+        // Destroy Quill.js instance
+        const quill = Quill.find('#' + editorId);
+        if (quill) {
+          quill.destroy();
+        }
+      }
+      
+      // Remove modal
+      modal.remove();
+    }
+
+    // Ellipsis Menu Functions
+    function toggleEllipsisMenu(ellipsisElement) {
+      const dropdown = ellipsisElement.querySelector('.ellipsis-dropdown');
+      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function addSingleChoice(optionElement) {
+      const nodeElement = optionElement.closest('.drawflow-node');
+      const questionContainer = nodeElement.querySelector('.question-container');
+      const questionId = Date.now();
+      
+      const singleChoiceHTML = `
+        <div class="question-item" id="question-${questionId}">
+          <div class="question-header">
+            <span class="question-type">Single Choice Question</span>
+          </div>
+          <div class="question-content">
+            <div class="question-wysiwyg">
+              <div class="question-preview" id="question-preview-${questionId}">
+                <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+              </div>
+              <textarea class="question-editor" style="display: none;"></textarea>
+              <div class="question-toolbar">
+                <button type="button" onclick="initQuestionEditor(${questionId})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+              </div>
+            </div>
+            <div class="options-container">
+              <div class="option-item">
+                <input type="radio" name="single-${questionId}" df-option>
+                <input type="text" placeholder="Option 1" df-option-label class="option-text">
+              </div>
+              <div class="option-item">
+                <input type="radio" name="single-${questionId}" df-option>
+                <input type="text" placeholder="Option 2" df-option-label class="option-text">
+              </div>
+            </div>
+            <button type="button" onclick="addOption(this, 'single')" class="btn-add-option">+</button>
+          </div>
+        </div>
+      `;
+      
+      questionContainer.insertAdjacentHTML('beforeend', singleChoiceHTML);
+      closeEllipsisMenu(optionElement);
+    }
+
+    function addMultipleChoice(optionElement) {
+      const nodeElement = optionElement.closest('.drawflow-node');
+      const questionContainer = nodeElement.querySelector('.question-container');
+      const questionId = Date.now();
+      
+      const multipleChoiceHTML = `
+        <div class="question-item" id="question-${questionId}">
+          <div class="question-header">
+            <span class="question-type">Multiple Choice Question</span>
+          </div>
+          <div class="question-content">
+            <div class="question-wysiwyg">
+              <div class="question-preview" id="question-preview-${questionId}">
+                <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+              </div>
+              <textarea class="question-editor" style="display: none;"></textarea>
+              <div class="question-toolbar">
+                <button type="button" onclick="initQuestionEditor(${questionId})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+              </div>
+            </div>
+            <div class="options-container">
+              <div class="option-item">
+                <input type="checkbox" df-option>
+                <input type="text" placeholder="Option 1" df-option-label class="option-text">
+              </div>
+              <div class="option-item">
+                <input type="checkbox" df-option>
+                <input type="text" placeholder="Option 2" df-option-label class="option-text">
+              </div>
+            </div>
+            <button type="button" onclick="addOption(this, 'multiple')" class="btn-add-option">+</button>
+          </div>
+        </div>
+      `;
+      
+      questionContainer.insertAdjacentHTML('beforeend', multipleChoiceHTML);
+      closeEllipsisMenu(optionElement);
+    }
+
+    function addOption(button, type) {
+      const questionItem = button.closest('.question-item');
+      const optionsContainer = questionItem.querySelector('.options-container');
+      const questionId = questionItem.id.replace('question-', '');
+      
+      const optionHTML = `
+        <div class="option-item">
+          <input type="${type === 'single' ? 'radio' : 'checkbox'}" name="${type === 'single' ? 'single-' + questionId : 'multiple-' + questionId}" df-option>
+          <input type="text" placeholder="New option" df-option-label class="option-text">
+        </div>
+      `;
+      
+      optionsContainer.insertAdjacentHTML('beforeend', optionHTML);
+    }
+
+    function removeQuestion(button) {
+      const questionItem = button.closest('.question-item');
+      questionItem.remove();
+    }
+
+    function closeEllipsisMenu(optionElement) {
+      const dropdown = optionElement.closest('.ellipsis-dropdown');
+      dropdown.style.display = 'none';
+    }
+
+    window.questionEditors = window.questionEditors || {};
+
+    function initQuestionEditor(questionId) {
+      const questionElement = document.getElementById(`question-${questionId}`);
+      const textarea = questionElement.querySelector('.question-editor');
+      const preview = questionElement.querySelector('.question-preview');
+      
+      // Get existing content
+      let existingContent = textarea.value || '';
+      if (!existingContent) {
+        if (preview.innerHTML !== '<p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>') {
+          existingContent = preview.innerHTML;
+        }
+      }
+      
+      // Create modal for question WYSIWYG editor
+      const modal = document.createElement('div');
+      modal.className = 'wysiwyg-modal';
+      modal.innerHTML = `
+        <div class="wysiwyg-modal-content">
+          <div class="wysiwyg-header">
+            <h3>Question Editor</h3>
+            <span class="wysiwyg-close" onclick="closeWysiwygModal(this)">&times;</span>
+          </div>
+          <div class="wysiwyg-body">
+            <div id="question-wysiwyg-editor-${questionId}">${existingContent}</div>
+          </div>
+          <div class="wysiwyg-footer">
+            <button type="button" onclick="saveQuestionContent(${questionId})" class="btn-save">Save</button>
+            <button type="button" onclick="closeWysiwygModal(this)" class="btn-cancel">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Initialize Quill.js for question editor
+      const quill = new Quill('#question-wysiwyg-editor-' + questionId, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ header: 1 }, { header: 2 }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            ['link', 'image'],
+            ['clean']
+          ]
+        },
+        formats: ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'header', 'list', 'bullet', 'color', 'background', 'align', 'link', 'image']
+      });
+      window.questionEditors[questionId] = quill;
+      
+      // Set initial content if it exists
+      if (existingContent && existingContent.trim()) {
+        quill.root.innerHTML = existingContent;
+      }
+    }
+
+    function saveQuestionContent(questionId) {
+      try {
+        const quill = window.questionEditors[questionId];
+        if (!quill) {
+          console.error('Quill editor not found');
+          return;
+        }
+        
+        const content = quill.root.innerHTML;
+        console.log('Saving question content:', content);
+        
+        // Update the textarea in the question
+        const questionElement = document.getElementById(`question-${questionId}`);
+        if (!questionElement) {
+          console.error('Question element not found');
+          return;
+        }
+        
+        const textarea = questionElement.querySelector('.question-editor');
+        if (textarea) {
+          textarea.value = content;
+        }
+        
+        // Update the preview area
+        const preview = questionElement.querySelector('.question-preview');
+        if (preview) {
+          if (content.trim() && content !== '<p><br></p>') {
+            preview.innerHTML = content;
+          } else {
+            preview.innerHTML = '<p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>';
+          }
+        }
+        
+        console.log('Question content saved successfully');
+        
+        // Close modal and destroy editor
+        closeWysiwygModal(document.querySelector('.wysiwyg-modal'));
+        
+        // Removed alert here
+        
+      } catch (error) {
+        console.error('Error saving question content:', error);
+        alert('Error saving question content. Please try again.');
+      }
+    }
+
+    function initMessageEditor(messageId) {
+      const messageElement = document.querySelector(`[id*="message-preview-${messageId}"]`).closest('.drawflow-node');
+      const textarea = messageElement.querySelector('.message-editor');
+      const preview = messageElement.querySelector('.message-preview');
+      
+      // Get existing content
+      let existingContent = textarea.value || '';
+      if (!existingContent) {
+        if (preview.innerHTML !== '<p style="color: #666; font-style: italic;">Click "Edit Message" to add content...</p>') {
+          existingContent = preview.innerHTML;
+        }
+      }
+      
+      // Create modal for message WYSIWYG editor
+      const modal = document.createElement('div');
+      modal.className = 'wysiwyg-modal';
+      modal.innerHTML = `
+        <div class="wysiwyg-modal-content">
+          <div class="wysiwyg-header">
+            <h3>Message Editor</h3>
+            <span class="wysiwyg-close" onclick="closeWysiwygModal(this)">&times;</span>
+          </div>
+          <div class="wysiwyg-body">
+            <div id="message-wysiwyg-editor-${messageId}">${existingContent}</div>
+          </div>
+          <div class="wysiwyg-footer">
+            <button type="button" onclick="saveMessageContent(${messageId})" class="btn-save">Save</button>
+            <button type="button" onclick="closeWysiwygModal(this)" class="btn-cancel">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Initialize Quill.js for message editor
+      const quill = new Quill('#message-wysiwyg-editor-' + messageId, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ header: 1 }, { header: 2 }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            ['link', 'image'],
+            ['clean']
+          ]
+        },
+        formats: ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'header', 'list', 'bullet', 'color', 'background', 'align', 'link', 'image']
+      });
+      window.messageEditors = window.messageEditors || {};
+      window.messageEditors[messageId] = quill;
+      
+      // Set initial content if it exists
+      if (existingContent && existingContent.trim()) {
+        quill.root.innerHTML = existingContent;
+      }
+    }
+
+    function saveMessageContent(messageId) {
+      try {
+        const quill = window.messageEditors[messageId];
+        if (!quill) {
+          console.error('Quill editor not found');
+          return;
+        }
+        
+        const content = quill.root.innerHTML;
+        console.log('Saving message content:', content);
+        
+        // Update the textarea in the message
+        const messageElement = document.querySelector(`[id*="message-preview-${messageId}"]`).closest('.drawflow-node');
+        if (!messageElement) {
+          console.error('Message element not found');
+          return;
+        }
+        
+        const textarea = messageElement.querySelector('.message-editor');
+        if (textarea) {
+          textarea.value = content;
+        }
+        
+        // Update the preview area
+        const preview = messageElement.querySelector('.message-preview');
+        if (preview) {
+          if (content.trim() && content !== '<p><br></p>') {
+            preview.innerHTML = content;
+          } else {
+            preview.innerHTML = '<p style="color: #666; font-style: italic;">Click "Edit Message" to add content...</p>';
+          }
+        }
+        
+        console.log('Message content saved successfully');
+        
+        // Close modal and destroy editor
+        closeWysiwygModal(document.querySelector('.wysiwyg-modal'));
+        
+      } catch (error) {
+        console.error('Error saving message content:', error);
+        alert('Error saving message content. Please try again.');
+      }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const ellipsisMenus = document.querySelectorAll('.ellipsis-menu');
+      ellipsisMenus.forEach(menu => {
+        const dropdown = menu.querySelector('.ellipsis-dropdown');
+        if (!menu.contains(event.target)) {
+          dropdown.style.display = 'none';
+        }
+      });
+      
+      // Close start options when clicking outside
+      const startOptions = document.getElementById('start-options');
+      const startButton = document.querySelector('.start-button');
+      if (startOptions && startButton && !startButton.contains(event.target) && !startOptions.contains(event.target)) {
+        startOptions.style.display = 'none';
+      }
+    });
+
+    // Start Button Functions
+    function showStartOptions() {
+      const startOptions = document.getElementById('start-options');
+      startOptions.style.display = startOptions.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function addSingleChoiceNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100; // Position below start button
+      
+      const singleChoiceTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box">
+            <div class="question-container" id="question-container-${Date.now()}">
+              <div class="question-item" id="question-${Date.now()}">
+                <div class="question-header">
+                  <span class="question-type">Single Choice Question</span>
+                </div>
+                <div class="question-content">
+                  <div class="question-wysiwyg">
+                    <div class="question-preview" id="question-preview-${Date.now()}">
+                      <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+                    </div>
+                    <textarea class="question-editor" style="display: none;"></textarea>
+                    <div class="question-toolbar">
+                      <button type="button" onclick="initQuestionEditor(${Date.now()})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+                    </div>
+                  </div>
+                  <div class="options-container">
+                    <div class="option-item">
+                      <input type="radio" name="single-${Date.now()}" df-option>
+                      <input type="text" placeholder="Option 1" df-option-label class="option-text">
+                    </div>
+                    <div class="option-item">
+                      <input type="radio" name="single-${Date.now()}" df-option>
+                      <input type="text" placeholder="Option 2" df-option-label class="option-text">
+                    </div>
+                  </div>
+                  <button type="button" onclick="addOption(this, 'single')" class="btn-add-option">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('single-choice', 1, 1, centerX, startY, 'single-choice', {}, singleChoiceTemplate);
+      hideStartOptions();
+    }
+
+    function addMultipleChoiceNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100; // Position below start button
+      
+      const multipleChoiceTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box">
+            <div class="question-container" id="question-container-${Date.now()}">
+              <div class="question-item" id="question-${Date.now()}">
+                <div class="question-header">
+                  <span class="question-type">Multiple Choice Question</span>
+                </div>
+                <div class="question-content">
+                  <div class="question-wysiwyg">
+                    <div class="question-preview" id="question-preview-${Date.now()}">
+                      <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+                    </div>
+                    <textarea class="question-editor" style="display: none;"></textarea>
+                    <div class="question-toolbar">
+                      <button type="button" onclick="initQuestionEditor(${Date.now()})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+                    </div>
+                  </div>
+                  <div class="options-container">
+                    <div class="option-item">
+                      <input type="checkbox" df-option>
+                      <input type="text" placeholder="Option 1" df-option-label class="option-text">
+                    </div>
+                    <div class="option-item">
+                      <input type="checkbox" df-option>
+                      <input type="text" placeholder="Option 2" df-option-label class="option-text">
+                    </div>
+                  </div>
+                  <button type="button" onclick="addOption(this, 'multiple')" class="btn-add-option">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('multiple-choice', 1, 1, centerX, startY, 'multiple-choice', {}, multipleChoiceTemplate);
+      hideStartOptions();
+    }
+
+    function addStartActionNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100;
+      
+      const startActionTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box start-action-box">
+            <div class="node-header">
+              <i class="fas fa-play"></i>
+              <span>Start Action</span>
+            </div>
+            <div class="node-content">
+              <p>This is the entry point of your chat flow. All flows should begin with a Start Action.</p>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('start-action', 0, 1, centerX, startY, 'start-action', {}, startActionTemplate);
+      hideStartOptions();
+    }
+
+    function addEndActionNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100;
+      
+      const endActionTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box end-action-box">
+            <div class="node-header">
+              <i class="fas fa-stop"></i>
+              <span>End Action</span>
+            </div>
+            <div class="node-content">
+              <div class="end-options">
+                <label><input type="checkbox" name="auto-close" value="true"> Auto close chat</label>
+                <label><input type="checkbox" name="save-session" value="true"> Save session data</label>
+                <label><input type="checkbox" name="show-feedback" value="true"> Show feedback form</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('end-action', 1, 0, centerX, startY, 'end-action', {}, endActionTemplate);
+      hideStartOptions();
+    }
+
+    function addGoToActionNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100;
+      
+      const goToActionTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box goto-action-box">
+            <div class="node-header">
+              <i class="fas fa-arrow-right"></i>
+              <span>Go to Action</span>
+            </div>
+            <div class="node-content">
+              <div class="action-selector">
+                <label>Target Action:</label>
+                <select class="action-select">
+                  <option value="">Select an action...</option>
+                  <option value="welcome-flow">Welcome Flow</option>
+                  <option value="product-flow">Product Flow</option>
+                  <option value="support-flow">Support Flow</option>
+                </select>
+              </div>
+              <div class="bypass-option">
+                <label><input type="checkbox" name="bypass-checks" value="true"> Bypass activation checks</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('goto-action', 1, 1, centerX, startY, 'goto-action', {}, goToActionTemplate);
+      hideStartOptions();
+    }
+
+    function addMessageNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100;
+      
+      const messageTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box message-box">
+            <div class="node-header">
+              <i class="fas fa-comment"></i>
+              <span>Message</span>
+            </div>
+            <div class="node-content">
+              <div class="message-wysiwyg">
+                <div class="message-preview" id="message-preview-${Date.now()}">
+                  <p style="color: #666; font-style: italic;">Click "Edit Message" to add content...</p>
+                </div>
+                <textarea class="message-editor" style="display: none;"></textarea>
+                <div class="message-toolbar">
+                  <button type="button" onclick="initMessageEditor(${Date.now()})" class="btn-edit-message"><i class="fas fa-edit"></i></button>
+                </div>
+              </div>
+              <div class="message-options">
+                <label><input type="checkbox" name="read-more" value="true"> Show "Read More" option</label>
+                <div class="replacement-tags">
+                  <small>Available tags: {%date%}, {%session_id%}, {%user_name%}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('message', 1, 1, centerX, startY, 'message', {}, messageTemplate);
+      hideStartOptions();
+    }
+
+    function addSliderQuestionNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100;
+      
+      const sliderQuestionTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Add Next Question</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box">
+            <div class="question-container" id="question-container-${Date.now()}">
+              <div class="question-item" id="question-${Date.now()}">
+                <div class="question-header">
+                  <span class="question-type">Slider Question</span>
+                </div>
+                <div class="question-content">
+                  <div class="question-wysiwyg">
+                    <div class="question-preview" id="question-preview-${Date.now()}">
+                      <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+                    </div>
+                    <textarea class="question-editor" style="display: none;"></textarea>
+                    <div class="question-toolbar">
+                      <button type="button" onclick="initQuestionEditor(${Date.now()})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+                    </div>
+                  </div>
+                  <div class="slider-config">
+                    <div class="slider-range">
+                      <label>Range:</label>
+                      <input type="number" placeholder="Min" class="slider-min" value="1">
+                      <span>to</span>
+                      <input type="number" placeholder="Max" class="slider-max" value="10">
+                    </div>
+                    <div class="slider-step">
+                      <label>Step:</label>
+                      <input type="number" placeholder="Step" class="slider-step-value" value="1">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('slider-question', 1, 1, centerX, startY, 'slider-question', {}, sliderQuestionTemplate);
+      hideStartOptions();
+    }
+
+    function addShowRecommendationsNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100;
+      
+      const showRecommendationsTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box recommendations-box">
+            <div class="node-header">
+              <i class="fas fa-lightbulb"></i>
+              <span>Show Recommendations</span>
+            </div>
+            <div class="node-content">
+              <div class="recommendations-config">
+                <label>Number of recommendations:</label>
+                <input type="number" class="rec-count" value="3" min="1" max="10">
+                <label>Content type:</label>
+                <select class="rec-type">
+                  <option value="articles">Articles</option>
+                  <option value="products">Products</option>
+                  <option value="pages">Pages</option>
+                  <option value="videos">Videos</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('show-recommendations', 1, 1, centerX, startY, 'show-recommendations', {}, showRecommendationsTemplate);
+      hideStartOptions();
+    }
+
+    function addSharePageNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100;
+      
+      const sharePageTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box share-page-box">
+            <div class="node-header">
+              <i class="fas fa-file-alt"></i>
+              <span>Share Page</span>
+            </div>
+            <div class="node-content">
+              <div class="page-config">
+                <label>Page URL:</label>
+                <input type="url" class="page-url" placeholder="https://example.com/page">
+                <label>Title:</label>
+                <input type="text" class="page-title" placeholder="Page title">
+                <label>Description:</label>
+                <textarea class="page-description" placeholder="Page description"></textarea>
+                <label>Thumbnail URL:</label>
+                <input type="url" class="page-thumbnail" placeholder="https://example.com/thumbnail.jpg">
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('share-page', 1, 1, centerX, startY, 'share-page', {}, sharePageTemplate);
+      hideStartOptions();
+    }
+
+    function addShareVideoNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100;
+      
+      const shareVideoTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box share-video-box">
+            <div class="node-header">
+              <i class="fas fa-video"></i>
+              <span>Share Video</span>
+            </div>
+            <div class="node-content">
+              <div class="video-config">
+                <label>Video URL:</label>
+                <input type="url" class="video-url" placeholder="https://example.com/video.mp4">
+                <label>Title:</label>
+                <input type="text" class="video-title" placeholder="Video title">
+                <label>Description:</label>
+                <textarea class="video-description" placeholder="Video description"></textarea>
+                <label>Thumbnail URL:</label>
+                <input type="url" class="video-thumbnail" placeholder="https://example.com/thumbnail.jpg">
+                <label>Duration (seconds):</label>
+                <input type="number" class="video-duration" placeholder="120">
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('share-video', 1, 1, centerX, startY, 'share-video', {}, shareVideoTemplate);
+      hideStartOptions();
+    }
+
+    function addSaveInsightNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100;
+      
+      const saveInsightTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box save-insight-box">
+            <div class="node-header">
+              <i class="fas fa-save"></i>
+              <span>Save Insight</span>
+            </div>
+            <div class="node-content">
+              <div class="insight-config">
+                <label>Insight Name:</label>
+                <input type="text" class="insight-name" placeholder="e.g., user_interested_in_product_x">
+                <label>Value:</label>
+                <input type="text" class="insight-value" placeholder="e.g., Yes, No, Maybe">
+                <label>Description:</label>
+                <textarea class="insight-description" placeholder="Description of this insight"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('save-insight', 1, 1, centerX, startY, 'save-insight', {}, saveInsightTemplate);
+      hideStartOptions();
+    }
+
+    function addInsightConditionNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100;
+      
+      const insightConditionTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box insight-condition-box">
+            <div class="node-header">
+              <i class="fas fa-question-circle"></i>
+              <span>Insight Condition</span>
+            </div>
+            <div class="node-content">
+              <div class="condition-config">
+                <label>Insight Name:</label>
+                <input type="text" class="condition-insight-name" placeholder="e.g., user_interested_in_product_x">
+                <label>Operator:</label>
+                <select class="condition-operator">
+                  <option value="equals">Equals</option>
+                  <option value="not_equals">Not Equals</option>
+                  <option value="contains">Contains</option>
+                  <option value="greater_than">Greater Than</option>
+                  <option value="less_than">Less Than</option>
+                </select>
+                <label>Value:</label>
+                <input type="text" class="condition-value" placeholder="Value to compare against">
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('insight-condition', 1, 2, centerX, startY, 'insight-condition', {}, insightConditionTemplate);
+      hideStartOptions();
+    }
+
+    function addUserConditionNode() {
+      const centerX = editor.precanvas.clientWidth / 2;
+      const startY = 100;
+      
+      const userConditionTemplate = `
+        <div>
+          <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+            <i class="fas fa-ellipsis-v"></i>
+            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="event.stopPropagation(); removeNode(this)">Remove Node</div>
+            </div>
+          </div>
+          <div class="box user-condition-box">
+            <div class="node-header">
+              <i class="fas fa-user-check"></i>
+              <span>User Condition</span>
+            </div>
+            <div class="node-content">
+              <div class="user-condition-config">
+                <label>Condition Type:</label>
+                <select class="user-condition-type">
+                  <option value="visit_count">Visit Count</option>
+                  <option value="session_duration">Session Duration</option>
+                  <option value="user_type">User Type</option>
+                  <option value="location">Location</option>
+                  <option value="device">Device Type</option>
+                </select>
+                <label>Operator:</label>
+                <select class="user-condition-operator">
+                  <option value="equals">Equals</option>
+                  <option value="not_equals">Not Equals</option>
+                  <option value="greater_than">Greater Than</option>
+                  <option value="less_than">Less Than</option>
+                  <option value="contains">Contains</option>
+                </select>
+                <label>Value:</label>
+                <input type="text" class="user-condition-value" placeholder="Value to compare against">
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      editor.addNode('user-condition', 1, 2, centerX, startY, 'user-condition', {}, userConditionTemplate);
+      hideStartOptions();
+    }
+
+    function addNextNode(optionElement, type) {
+      const currentNode = optionElement.closest('.drawflow-node');
+      const currentNodeRect = currentNode.getBoundingClientRect();
+      const canvasRect = editor.precanvas.getBoundingClientRect();
+      
+      // Calculate position below current node
+      const nextX = (currentNodeRect.left + currentNodeRect.width / 2 - canvasRect.left) / editor.zoom;
+      const nextY = (currentNodeRect.bottom - canvasRect.top + 50) / editor.zoom; // 50px gap
+      
+      let nextNodeTemplate = '';
+      let nodeType = '';
+      let inputs = 1;
+      let outputs = 1;
+      
+      // Create template based on node type
+      switch(type) {
+        case 'single':
+        case 'multiple':
+          nextNodeTemplate = `
+            <div>
+              <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+            </div>
+              </div>
+              <div class="box">
+                <div class="question-container" id="question-container-${Date.now()}">
+                  <div class="question-item" id="question-${Date.now()}">
+                    <div class="question-header">
+                      <span class="question-type">${type === 'single' ? 'Single' : 'Multiple'} Choice Question</span>
+                    </div>
+                    <div class="question-content">
+                      <div class="question-wysiwyg">
+                        <div class="question-preview" id="question-preview-${Date.now()}">
+                          <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+                        </div>
+                        <textarea class="question-editor" style="display: none;"></textarea>
+                        <div class="question-toolbar">
+                          <button type="button" onclick="initQuestionEditor(${Date.now()})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+                        </div>
+                      </div>
+                      <div class="options-container">
+                        <div class="option-item">
+                          <input type="${type === 'single' ? 'radio' : 'checkbox'}" name="${type}-${Date.now()}" df-option>
+                          <input type="text" placeholder="Option 1" df-option-label class="option-text">
+                        </div>
+                        <div class="option-item">
+                          <input type="${type === 'single' ? 'radio' : 'checkbox'}" name="${type}-${Date.now()}" df-option>
+                          <input type="text" placeholder="Option 2" df-option-label class="option-text">
+                        </div>
+                      </div>
+                      <button type="button" onclick="addOption(this, '${type}')" class="btn-add-option">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          nodeType = `${type}-choice-next`;
+          break;
+          
+        case 'slider':
+          nextNodeTemplate = `
+            <div>
+              <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+            </div>
+              </div>
+              <div class="box">
+                <div class="question-container" id="question-container-${Date.now()}">
+                  <div class="question-item" id="question-${Date.now()}">
+                    <div class="question-header">
+                      <span class="question-type">Slider Question</span>
+                    </div>
+                    <div class="question-content">
+                      <div class="question-wysiwyg">
+                        <div class="question-preview" id="question-preview-${Date.now()}">
+                          <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+                        </div>
+                        <textarea class="question-editor" style="display: none;"></textarea>
+                        <div class="question-toolbar">
+                          <button type="button" onclick="initQuestionEditor(${Date.now()})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+                        </div>
+                      </div>
+                      <div class="slider-config">
+                        <div class="slider-range">
+                          <label>Range:</label>
+                          <input type="number" placeholder="Min" class="slider-min" value="1">
+                          <span>to</span>
+                          <input type="number" placeholder="Max" class="slider-max" value="10">
+                        </div>
+                        <div class="slider-step">
+                          <label>Step:</label>
+                          <input type="number" placeholder="Step" class="slider-step-value" value="1">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          nodeType = 'slider-question-next';
+          break;
+          
+        case 'message':
+          nextNodeTemplate = `
+            <div>
+              <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                            <div class="ellipsis-dropdown">
+              <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+              <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+            </div>
+              </div>
+              <div class="box message-box">
+                <div class="node-header">
+                  <i class="fas fa-comment"></i>
+                  <span>Message</span>
+                </div>
+                <div class="node-content">
+                  <div class="message-wysiwyg">
+                    <div class="message-preview" id="message-preview-${Date.now()}">
+                      <p style="color: #666; font-style: italic;">Click "Edit Message" to add content...</p>
+                    </div>
+                    <textarea class="message-editor" style="display: none;"></textarea>
+                    <div class="message-toolbar">
+                      <button type="button" onclick="initMessageEditor(${Date.now()})" class="btn-edit-message"><i class="fas fa-edit"></i></button>
+                    </div>
+                  </div>
+                  <div class="message-options">
+                    <label><input type="checkbox" name="read-more" value="true"> Show "Read More" option</label>
+                    <div class="replacement-tags">
+                      <small>Available tags: {%date%}, {%session_id%}, {%user_name%}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          nodeType = 'message-next';
+          break;
+          
+        case 'start':
+          nextNodeTemplate = `
+            <div>
+              <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                <div class="ellipsis-dropdown">
+                  <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+                  <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+                </div>
+              </div>
+              <div class="box start-action-box">
+                <div class="node-header">
+                  <i class="fas fa-play"></i>
+                  <span>Start Action</span>
+                </div>
+                <div class="node-content">
+                  <p>This is the entry point of your chat flow. All flows should begin with a Start Action.</p>
+                </div>
+              </div>
+            </div>
+          `;
+          nodeType = 'start-action-next';
+          inputs = 0;
+          break;
+          
+        case 'goto':
+          nextNodeTemplate = `
+            <div>
+              <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                <div class="ellipsis-dropdown">
+                  <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+                  <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+                </div>
+              </div>
+              <div class="box goto-action-box">
+                <div class="node-header">
+                  <i class="fas fa-arrow-right"></i>
+                  <span>Go to Action</span>
+                </div>
+                <div class="node-content">
+                  <div class="action-selector">
+                    <label>Target Action:</label>
+                    <select class="action-select">
+                      <option value="">Select an action...</option>
+                      <option value="welcome-flow">Welcome Flow</option>
+                      <option value="product-flow">Product Flow</option>
+                      <option value="support-flow">Support Flow</option>
+                    </select>
+                  </div>
+                  <div class="bypass-option">
+                    <label><input type="checkbox" name="bypass-checks" value="true"> Bypass activation checks</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          nodeType = 'goto-action-next';
+          break;
+          
+        case 'recommendations':
+          nextNodeTemplate = `
+            <div>
+              <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                <div class="ellipsis-dropdown">
+                  <div class="ellipsis-option" onclick="addNextNode(this, 'start')">Start Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'end')">End Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'goto')">Go to Action</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'message')">Message</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Single Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'multiple')">Multiple Choice Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'slider')">Slider Question</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'recommendations')">Show Recommendations</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Share Page</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Share Video</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Save Insight</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Insight Condition</div>
+              <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">User Condition</div>
+                  <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+                </div>
+              </div>
+              <div class="box recommendations-box">
+                <div class="node-header">
+                  <i class="fas fa-lightbulb"></i>
+                  <span>Show Recommendations</span>
+                </div>
+                <div class="node-content">
+                  <div class="recommendations-config">
+                    <label>Number of recommendations:</label>
+                    <input type="number" class="rec-count" value="3" min="1" max="10">
+                    <label>Content type:</label>
+                    <select class="rec-type">
+                      <option value="articles">Articles</option>
+                      <option value="products">Products</option>
+                      <option value="pages">Pages</option>
+                      <option value="videos">Videos</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          nodeType = 'show-recommendations-next';
+          break;
+          
+        case 'share-page':
+          nextNodeTemplate = `
+            <div>
+              <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                <div class="ellipsis-dropdown">
+                  <div class="ellipsis-option" onclick="addNextNode(this, 'share-page')">Add Next Action</div>
+                  <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+                </div>
+              </div>
+              <div class="box share-page-box">
+                <div class="node-header">
+                  <i class="fas fa-file-alt"></i>
+                  <span>Share Page</span>
+                </div>
+                <div class="node-content">
+                  <div class="page-config">
+                    <label>Page URL:</label>
+                    <input type="url" class="page-url" placeholder="https://example.com/page">
+                    <label>Title:</label>
+                    <input type="text" class="page-title" placeholder="Page title">
+                    <label>Description:</label>
+                    <textarea class="page-description" placeholder="Page description"></textarea>
+                    <label>Thumbnail URL:</label>
+                    <input type="url" class="page-thumbnail" placeholder="https://example.com/thumbnail.jpg">
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          nodeType = 'share-page-next';
+          break;
+          
+        case 'share-video':
+          nextNodeTemplate = `
+            <div>
+              <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                <div class="ellipsis-dropdown">
+                  <div class="ellipsis-option" onclick="addNextNode(this, 'share-video')">Add Next Action</div>
+                  <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+                </div>
+              </div>
+              <div class="box share-video-box">
+                <div class="node-header">
+                  <i class="fas fa-video"></i>
+                  <span>Share Video</span>
+                </div>
+                <div class="node-content">
+                  <div class="video-config">
+                    <label>Video URL:</label>
+                    <input type="url" class="video-url" placeholder="https://example.com/video.mp4">
+                    <label>Title:</label>
+                    <input type="text" class="video-title" placeholder="Video title">
+                    <label>Description:</label>
+                    <textarea class="video-description" placeholder="Video description"></textarea>
+                    <label>Thumbnail URL:</label>
+                    <input type="url" class="video-thumbnail" placeholder="https://example.com/thumbnail.jpg">
+                    <label>Duration (seconds):</label>
+                    <input type="number" class="video-duration" placeholder="120">
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          nodeType = 'share-video-next';
+          break;
+          
+        case 'save-insight':
+          nextNodeTemplate = `
+            <div>
+              <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                <div class="ellipsis-dropdown">
+                  <div class="ellipsis-option" onclick="addNextNode(this, 'save-insight')">Add Next Action</div>
+                  <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+                </div>
+              </div>
+              <div class="box save-insight-box">
+                <div class="node-header">
+                  <i class="fas fa-save"></i>
+                  <span>Save Insight</span>
+                </div>
+                <div class="node-content">
+                  <div class="insight-config">
+                    <label>Insight Name:</label>
+                    <input type="text" class="insight-name" placeholder="e.g., user_interested_in_product_x">
+                    <label>Value:</label>
+                    <input type="text" class="insight-value" placeholder="e.g., Yes, No, Maybe">
+                    <label>Description:</label>
+                    <textarea class="insight-description" placeholder="Description of this insight"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          nodeType = 'save-insight-next';
+          break;
+          
+        case 'insight-condition':
+          nextNodeTemplate = `
+            <div>
+              <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                <div class="ellipsis-dropdown">
+                  <div class="ellipsis-option" onclick="addNextNode(this, 'insight-condition')">Add Next Action</div>
+                  <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+                </div>
+              </div>
+              <div class="box insight-condition-box">
+                <div class="node-header">
+                  <i class="fas fa-question-circle"></i>
+                  <span>Insight Condition</span>
+                </div>
+                <div class="node-content">
+                  <div class="condition-config">
+                    <label>Insight Name:</label>
+                    <input type="text" class="condition-insight-name" placeholder="e.g., user_interested_in_product_x">
+                    <label>Operator:</label>
+                    <select class="condition-operator">
+                      <option value="equals">Equals</option>
+                      <option value="not_equals">Not Equals</option>
+                      <option value="contains">Contains</option>
+                      <option value="greater_than">Greater Than</option>
+                      <option value="less_than">Less Than</option>
+                    </select>
+                    <label>Value:</label>
+                    <input type="text" class="condition-value" placeholder="Value to compare against">
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          nodeType = 'insight-condition-next';
+          outputs = 2; // True/False outputs
+          break;
+          
+        case 'user-condition':
+          nextNodeTemplate = `
+            <div>
+              <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                <div class="ellipsis-dropdown">
+                  <div class="ellipsis-option" onclick="addNextNode(this, 'user-condition')">Add Next Action</div>
+                  <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+                </div>
+              </div>
+              <div class="box user-condition-box">
+                <div class="node-header">
+                  <i class="fas fa-user-check"></i>
+                  <span>User Condition</span>
+                </div>
+                <div class="node-content">
+                  <div class="user-condition-config">
+                    <label>Condition Type:</label>
+                    <select class="user-condition-type">
+                      <option value="visit_count">Visit Count</option>
+                      <option value="session_duration">Session Duration</option>
+                      <option value="user_type">User Type</option>
+                      <option value="location">Location</option>
+                      <option value="device">Device Type</option>
+                    </select>
+                    <label>Operator:</label>
+                    <select class="user-condition-operator">
+                      <option value="equals">Equals</option>
+                      <option value="not_equals">Not Equals</option>
+                      <option value="greater_than">Greater Than</option>
+                      <option value="less_than">Less Than</option>
+                      <option value="contains">Contains</option>
+                    </select>
+                    <label>Value:</label>
+                    <input type="text" class="user-condition-value" placeholder="Value to compare against">
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          nodeType = 'user-condition-next';
+          outputs = 2; // True/False outputs
+          break;
+          
+        default:
+          // Default to single choice question
+          nextNodeTemplate = `
+            <div>
+              <div class="ellipsis-menu" onclick="toggleEllipsisMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                <div class="ellipsis-dropdown">
+                  <div class="ellipsis-option" onclick="addNextNode(this, 'single')">Add Next Question</div>
+                  <div class="ellipsis-option" onclick="removeNode(this)">Remove Node</div>
+                </div>
+              </div>
+              <div class="box">
+                <div class="question-container" id="question-container-${Date.now()}">
+                  <div class="question-item" id="question-${Date.now()}">
+                    <div class="question-header">
+                      <span class="question-type">Single Choice Question</span>
+                    </div>
+                    <div class="question-content">
+                      <div class="question-wysiwyg">
+                        <div class="question-preview" id="question-preview-${Date.now()}">
+                          <p style="color: #666; font-style: italic;">Click "Edit Question" to add question content...</p>
+                        </div>
+                        <textarea class="question-editor" style="display: none;"></textarea>
+                        <div class="question-toolbar">
+                          <button type="button" onclick="initQuestionEditor(${Date.now()})" class="btn-edit-question"><i class="fas fa-edit"></i></button>
+                        </div>
+                      </div>
+                      <div class="options-container">
+                        <div class="option-item">
+                          <input type="radio" name="single-${Date.now()}" df-option>
+                          <input type="text" placeholder="Option 1" df-option-label class="option-text">
+                        </div>
+                        <div class="option-item">
+                          <input type="radio" name="single-${Date.now()}" df-option>
+                          <input type="text" placeholder="Option 2" df-option-label class="option-text">
+                        </div>
+                      </div>
+                      <button type="button" onclick="addOption(this, 'single')" class="btn-add-option">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          nodeType = 'single-choice-next';
+          break;
+      }
+      
+      // Get current node ID before adding new node
+      const currentNodeId = currentNode.id.replace('node-', '');
+      
+      // Add the new node
+      const newNodeId = editor.addNode(nodeType, inputs, outputs, nextX, nextY, nodeType, {}, nextNodeTemplate);
+      
+      // Wait a bit for the node to be fully created, then create connection
+      setTimeout(() => {
+        try {
+          // Create connection from current node to new node
+          editor.addConnection(currentNodeId, 0, newNodeId, 0);
+          console.log(`Connection created from node ${currentNodeId} to node ${newNodeId}`);
+        } catch (error) {
+          console.error('Error creating connection:', error);
+          // Try alternative connection method
+          try {
+            editor.addConnection(currentNodeId, 0, newNodeId, 0);
+            console.log(`Alternative connection created from node ${currentNodeId} to node ${newNodeId}`);
+          } catch (altError) {
+            console.error('Alternative connection also failed:', altError);
+            // Try manual connection creation
+            try {
+              const connection = {
+                id: `conn_${currentNodeId}_${newNodeId}`,
+                output_id: currentNodeId,
+                output_class: 0,
+                input_id: newNodeId,
+                input_class: 0
+              };
+              editor.drawflow.drawflow[editor.module].data[connection.id] = connection;
+              editor.updateConnectionNodes(`node-${currentNodeId}`);
+              editor.updateConnectionNodes(`node-${newNodeId}`);
+              console.log(`Manual connection created from node ${currentNodeId} to node ${newNodeId}`);
+            } catch (manualError) {
+              console.error('Manual connection also failed:', manualError);
+            }
+          }
+        }
+      }, 100);
+      
+      closeEllipsisMenu(optionElement);
+    }
+
+    function removeNode(optionElement) {
+      console.log('removeNode called with:', optionElement);
+      
+      // Find the node element
+      const nodeElement = optionElement.closest('.drawflow-node');
+      console.log('Found node element:', nodeElement);
+      
+      if (!nodeElement) {
+        console.error('Could not find node element');
+        return;
+      }
+      
+      const nodeId = nodeElement.id.replace('node-', '');
+      console.log('Node ID to remove:', nodeId);
+      
+      try {
+        editor.removeNodeId('node-' + nodeId); // <-- fix here
+        console.log('Node removed successfully');
+      } catch (error) {
+        console.error('Error removing node:', error);
+      }
+      
+      closeEllipsisMenu(optionElement);
+    }
+
+    function hideStartOptions() {
+      const startOptions = document.getElementById('start-options');
+      startOptions.style.display = 'none';
+    }
+
+  </script>
+  </body>
+  </html>
